@@ -114,7 +114,7 @@ public class PreView extends SurfaceView implements SurfaceHolder.Callback {
 			mCamera.setPreviewCallback(null);
 			mCamera.release();
 			mCamera = null;
-			num = 0;
+//			num = 0;
 		}
 	}
 
@@ -133,17 +133,35 @@ public class PreView extends SurfaceView implements SurfaceHolder.Callback {
 			// TODO Auto-generated method stub
 			Log.d("takephoto", "lalalalalalal!");
 			mBitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-			File f = new File(android.os.Environment.getExternalStorageDirectory()
-					+ "/camera" + Integer.toString(num++) + ".jpg");
+//			File datafile = new File(android.os.Environment.getExternalStorageDirectory()
+//					+ "/capstone/camera" + Integer.toString(num++) + ".dat");			
+			
+			File imagefile = new File(android.os.Environment.getExternalStorageDirectory()
+					+ "/capstone/camera" + Integer.toString(num++) + ".jpg");
 			try {
-				BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(f));
+				BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(imagefile));
 				mBitmap.compress(Bitmap.CompressFormat.JPEG, 80, os);
+				
 				os.flush();
 				os.close();
+				
+//				os = new BufferedOutputStream(new FileOutputStream(datafile));
+//				os.write(data);
+//				os.flush();
+//				os.close();
+				
 //				Canvas canvas = holder.lockCanvas();
 //				canvas.drawBitmap(mBitmap, 0, 0, null);
 //				holder.unlockCanvasAndPost(canvas);
 				mCamera.startPreview();
+				
+		        float[] dis = new float[3];
+		        Parameters parameters = mCamera.getParameters();
+		        parameters.getFocusDistances(dis);
+		        Log.d("focal dis", Float.toString(dis[0]) + " " + Float.toString(dis[1]) + " " + Float.toString(dis[2]));
+		        
+		        Log.d("focal length", Float.toString(parameters.getFocalLength()));
+				
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
