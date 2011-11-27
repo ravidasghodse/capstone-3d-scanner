@@ -179,25 +179,65 @@ class View extends CvViewBase {
         	//Mat thresholdImage = new Mat(getFrameHeight() + getFrameHeight() / 2, getFrameWidth(), CvType.CV_8UC1);
 //        	Imgproc.cvtColor(mYuv, mRgba, Imgproc.COLOR_YUV420sp2RGB, 4);
         	//Mat line = mRgba.clone();
-        	File file = new File(android.os.Environment.getExternalStorageDirectory()
-					+ "/capstone/camera" + Integer.toString(num++) + ".dat");
+//        	for(int k = 0; k < mYuv.channels(); k++) {
+//	        	File file = new File(android.os.Environment.getExternalStorageDirectory()
+//						+ "/capstone/camera" + Integer.toString(num) 
+//						+ "_" + Integer.toString(k+1) + ".dat");
+//	        	
+//				try {
+//					FileWriter filewriter = new FileWriter(file);
+//					BufferedWriter  fileoutData=new BufferedWriter(filewriter);
+//					for(int i = 0; i < mYuv.rows(); i++) {
+//						for(int j = 0; j < mYuv.cols(); j++) {
+//							fileoutData.write(String.format("%6.2f ", mYuv.get(i, j)[k]));
+//						}
+//						fileoutData.write("\n");
+//					}
+//					
+//				} catch (IOException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//        	}
         	
-			try {
-				FileWriter filewriter = new FileWriter(file);
-				BufferedWriter  fileoutData=new BufferedWriter(filewriter);
-				for(int i = 0; i < mRgba.rows(); i++) {
-					for(int j = 0; j < mRgba.cols(); j++) {
-						fileoutData.write(String.format("%6.2f ", mRgba.get(i, j)[0]));
-					}
-					fileoutData.write("\n");
-				}
-				
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-        	
-			ScannerActivity.viewMode = ScannerActivity.VIEW_MODE_RGBA;
+            double [] p;
+            for(int i = 0; i < 480; i++) {
+    			for(int j = 0; j < mYuv.cols(); j++) {
+    				p = mYuv.get(i, j);
+    				if(p[0] != 255) {
+    					p[0] = 0.00;
+    					mYuv.put(i, j, p);
+    				}
+    			}
+    		}
+            
+//	        Bitmap bmp = Bitmap.createBitmap(getFrameWidth(), 
+//	        		                         getFrameHeight(), 
+//	        		                         Bitmap.Config.ARGB_8888);
+//
+//	        Utils.matToBitmap(mRgba, bmp);
+//	        
+//	        File imagefile = new File(android.os.Environment.getExternalStorageDirectory()
+//					+ "/capstone/camera" + Integer.toString(num++) + ".jpg");
+//	        try {
+//				BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(imagefile));
+//				bmp.compress(Bitmap.CompressFormat.JPEG, 80, os);
+//				
+//				os.flush();
+//				os.close();
+//				
+//			} catch (FileNotFoundException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+			
+			Imgproc.cvtColor(mYuv, mRgba, Imgproc.COLOR_YUV420sp2RGB, 4);
+			
+//			ScannerActivity.viewMode = ScannerActivity.VIEW_MODE_RGBA;
+			
 //            Imgproc.cvtColor(mRgba, thresholdImage, Imgproc.COLOR_RGB2GRAY, 4);
 //            Imgproc.Canny(thresholdImage, thresholdImage, 80, 100, 3);
 //            Mat lines = new Mat();
@@ -226,23 +266,6 @@ class View extends CvViewBase {
         }
 
         Bitmap bmp = Bitmap.createBitmap(getFrameWidth(), getFrameHeight(), Bitmap.Config.ARGB_8888);
-
-        File imagefile = new File(android.os.Environment.getExternalStorageDirectory()
-				+ "/capstone/camera" + Integer.toString(num++) + ".jpg");
-        try {
-			BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(imagefile));
-			bmp.compress(Bitmap.CompressFormat.JPEG, 80, os);
-			
-			os.flush();
-			os.close();
-			
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		
         if (Utils.matToBitmap(mRgba, bmp))
             return bmp;
