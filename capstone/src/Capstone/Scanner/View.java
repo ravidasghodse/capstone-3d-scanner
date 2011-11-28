@@ -118,6 +118,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
@@ -129,9 +130,11 @@ import org.opencv.imgproc.Imgproc;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.util.Log;
 import android.view.SurfaceHolder;
+import android.opengl.*;
 
 class View extends CvViewBase {
     private Mat mYuv;
@@ -139,6 +142,9 @@ class View extends CvViewBase {
     private Mat mGraySubmat;
     private Mat mIntermediateMat;
 
+    private ArrayList<Point> leftSpots;
+    private ArrayList<Point> rightSpots;
+    private ArrayList<Point> coordinations;
     private int num;
     
     public View(Context context) {
@@ -164,6 +170,8 @@ class View extends CvViewBase {
     protected Bitmap processFrame(byte[] data) {
         mYuv.put(0, 0, data);
 
+        Log.d("mYuv", String.format("col: %d  row: %d\n", mYuv.cols(), mYuv.rows()));
+        
         switch (ScannerActivity.viewMode) {
         case ScannerActivity.VIEW_MODE_GRAY:
             Imgproc.cvtColor(mGraySubmat, mRgba, Imgproc.COLOR_GRAY2RGBA, 4);
@@ -176,9 +184,25 @@ class View extends CvViewBase {
             Imgproc.cvtColor(mIntermediateMat, mRgba, Imgproc.COLOR_GRAY2BGRA, 4);
             break;
         case ScannerActivity.VIEW_MODE_FEATURES:
-        	//Mat thresholdImage = new Mat(getFrameHeight() + getFrameHeight() / 2, getFrameWidth(), CvType.CV_8UC1);
+        	
+        	leftSpots = findSpots(mYuv);
+        	Log.d("findspot", String.format("Found %d spots", leftSpots.size()));
+        	printPointToFile(leftSpots);
+        	rightSpots = findCorrespondSpots(leftSpots);
+        	
+        	double[] point;
+        	for(int i = 0; i < leftSpots.size(); i++) {
+        		
+        		point = triangulation(leftSpots.get(i), rightSpots.get(i));
+        		
+        		// render by opengl
+        	}
+        	
+        	ScannerActivity.viewMode = ScannerActivity.VIEW_MODE_RGBA;
+        	
+//        	Mat thresholdImage = new Mat(getFrameHeight() + getFrameHeight() / 2, getFrameWidth(), CvType.CV_8UC1);
 //        	Imgproc.cvtColor(mYuv, mRgba, Imgproc.COLOR_YUV420sp2RGB, 4);
-        	//Mat line = mRgba.clone();
+//        	Mat line = mRgba.clone();
 //        	for(int k = 0; k < mYuv.channels(); k++) {
 //	        	File file = new File(android.os.Environment.getExternalStorageDirectory()
 //						+ "/capstone/camera" + Integer.toString(num) 
@@ -193,23 +217,46 @@ class View extends CvViewBase {
 //						}
 //						fileoutData.write("\n");
 //					}
-//					
+//					fileoutData.flush();
+//        			fileoutData.close();
 //				} catch (IOException e) {
 //					// TODO Auto-generated catch block
 //					e.printStackTrace();
 //				}
 //        	}
         	
-            double [] p;
-            for(int i = 0; i < 480; i++) {
-    			for(int j = 0; j < mYuv.cols(); j++) {
-    				p = mYuv.get(i, j);
-    				if(p[0] != 255) {
-    					p[0] = 0.00;
-    					mYuv.put(i, j, p);
-    				}
-    			}
-    		}
+//            double [] p;
+//            Mat mLine = Mat.zeros(mYuv.rows(), mYuv.cols(), mYuv.type());
+//            Log.d("mline", mLine.toString());
+//            int nStart = -1, nEnd = mYuv.cols();
+//            int start, end;
+//            for(int i = 0; i < 480; i++) {
+//            	start = nStart;
+//            	end = nEnd;
+//            	while(++start < mYuv.cols() && !isTarget(mYuv.get(i, start)));
+//            	while(--end > -1 && end > start && !isTarget(mYuv.get(i, end)));
+//            	
+//            	if(end > start) {
+//            		nStart = Math.max(start - 10, 0);
+//            		nEnd = Math.min(end + 10, mYuv.cols()-1);
+//            	} else {
+//            		nStart = -1;
+//            		nEnd = mYuv.cols();
+//            		continue;
+//            	}
+//            	
+//            	Log.d("range", String.format("nStart = %d, nEnd = %d", nStart, nEnd));
+//            	
+//            	while(end > start) {
+//            		p = mYuv.get(i, start);
+//    				if(isTarget(p)) {
+//    					mLine.put(i, start, p);
+//    				}
+//    				start++;
+//            	}
+//    		}
+//            
+//            Imgproc.cvtColor(mLine, mRgba, Imgproc.COLOR_YUV420sp2RGB, 4);
             
 //	        Bitmap bmp = Bitmap.createBitmap(getFrameWidth(), 
 //	        		                         getFrameHeight(), 
@@ -234,7 +281,7 @@ class View extends CvViewBase {
 //				e.printStackTrace();
 //			}
 			
-			Imgproc.cvtColor(mYuv, mRgba, Imgproc.COLOR_YUV420sp2RGB, 4);
+//			Imgproc.cvtColor(mYuv, mRgba, Imgproc.COLOR_YUV420sp2RGB, 4);
 			
 //			ScannerActivity.viewMode = ScannerActivity.VIEW_MODE_RGBA;
 			
@@ -301,4 +348,74 @@ class View extends CvViewBase {
 //    static {
 //        System.loadLibrary("mixed_sample");
 //    }
+    
+    
+    private Boolean isTarget(double[] p) {
+    	return ((int)p[0] == 255);
+    }
+    
+    private ArrayList<Point> findSpots(Mat mat) {
+    	ArrayList<Point> spots = new ArrayList<Point>();
+    	
+    	double[] p;
+    	int nStart = -1, nEnd = mat.cols();
+        int start, end;
+        for(int i = 0; i < 480; i++) {
+        	start = nStart;
+        	end = nEnd;
+        	while(++start < mat.cols() && !isTarget(mat.get(i, start)));
+        	while(--end > -1 && end > start && !isTarget(mat.get(i, end)));
+        	
+        	if(end > start) {
+        		nStart = Math.max(start - 10, 0);
+        		nEnd = Math.min(end + 10, mat.cols()-1);
+        	} else {
+        		nStart = -1;
+        		nEnd = mat.cols();
+        		continue;
+        	}
+        	
+//        	Log.d("range", String.format("nStart = %d, nEnd = %d", nStart, nEnd));
+        	
+        	while(end > start) {
+        		p = mYuv.get(i, start);
+				if(isTarget(p)) {
+					spots.add(new Point(i, start));
+				}
+				start++;
+        	}
+		}
+    	
+    	return spots;
+    }
+    
+    private ArrayList<Point> findCorrespondSpots(ArrayList<Point> leftSpots) {
+    	ArrayList<Point> rightSpots = new ArrayList<Point>();
+    	
+    	// to do
+    	
+    	return rightSpots;
+    }
+    
+    private double[] triangulation(Point left, Point right) {
+    	double[] point = new double[3];
+    	
+    	return point;
+    }
+    
+    private void printPointToFile(ArrayList<Point> spots) {
+    	File file = new File(android.os.Environment.getExternalStorageDirectory()
+				+ "/capstone/point_" + Integer.toString(num) + ".txt");
+    	
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+			for(Point point : spots)
+				writer.write(String.format("%3d %3d\n", (int) point.x, (int) point.y));
+			writer.flush();
+			writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
 }
