@@ -187,6 +187,23 @@ public abstract class CvViewBase extends SurfaceView implements SurfaceHolder.Ca
         Log.i(TAG, "surfaceCreated");
         if (mCamera != null) {
             Camera.Parameters params = mCamera.getParameters();
+            
+            // show supported parameters of camera
+            Camera.CameraInfo info = new Camera.CameraInfo();
+            for(int i = 0; i < Camera.getNumberOfCameras(); i++) {
+	            Camera.getCameraInfo(i, info);
+	            Log.d(String.format("param:camera%d", i), String.format("facing: %d, orientation: %d", info.facing, info.orientation));
+            }
+            Log.d("param:focus", params.getSupportedFocusModes().toString());
+//            Log.d("param:preview fps", params.getSupportedPreviewFrameRates().toString());
+//            Log.d("param:preview framerate", params.getSupportedPreviewFrameRates().toString());
+            // end of parameters
+
+            List<Camera.Size> picSizes = params.getSupportedPictureSizes();
+            for(Camera.Size size : picSizes)
+            	Log.d("param:pic size", String.format("width = %d height = %d", size.width, size.height));
+            
+            
             List<Camera.Size> sizes = params.getSupportedPreviewSizes();
             mFrameWidth = width;
             mFrameHeight = height;
@@ -195,6 +212,7 @@ public abstract class CvViewBase extends SurfaceView implements SurfaceHolder.Ca
             {
                 double minDiff = Double.MAX_VALUE;
                 for (Camera.Size size : sizes) {
+                	Log.d("param:preview size", String.format("width = %d height = %d", size.width, size.height));
                     if (Math.abs(size.height - height) < minDiff) {
                         mFrameWidth = size.width;
                         mFrameHeight = size.height;
@@ -204,9 +222,7 @@ public abstract class CvViewBase extends SurfaceView implements SurfaceHolder.Ca
             }
 
             params.setFocusMode(Camera.Parameters.FOCUS_MODE_INFINITY);
-//            Camera.CameraInfo info;
-//            mCamera.getCameraInfo(0, info);
-            
+           
             params.setPreviewSize(getFrameWidth(), getFrameHeight());
             mCamera.setParameters(params);
             try {
@@ -220,7 +236,7 @@ public abstract class CvViewBase extends SurfaceView implements SurfaceHolder.Ca
 
     public void surfaceCreated(SurfaceHolder holder) {
         Log.i(TAG, "surfaceCreated");
-        mCamera = Camera.open();
+        mCamera = Camera.open(1);
         mCamera.setPreviewCallback(new PreviewCallback() {
             public void onPreviewFrame(byte[] data, Camera camera) {
                 synchronized (CvViewBase.this) {

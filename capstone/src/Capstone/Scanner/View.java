@@ -125,6 +125,7 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.CvType;
 import org.opencv.core.Point;
+import org.opencv.core.Point3;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
@@ -142,14 +143,17 @@ class View extends CvViewBase {
     private Mat mGraySubmat;
     private Mat mIntermediateMat;
 
-    private ArrayList<Point> leftSpots;
-    private ArrayList<Point> rightSpots;
-    private ArrayList<Point> coordinations;
+    private ArrayList<Point> lhsSpotList;
+    private ArrayList<Point> rhsSpotList;
+    private ArrayList<Point3> pointList;
+    
     private int num;
     
     public View(Context context) {
         super(context);
         num = 0;
+        rhsSpotList = new ArrayList<Point>();
+        pointList = new ArrayList<Point3>();
     }
 
     @Override
@@ -185,22 +189,32 @@ class View extends CvViewBase {
             break;
         case ScannerActivity.VIEW_MODE_FEATURES:
         	
-        	leftSpots = findSpots(mYuv);
-        	Log.d("findspot", String.format("Found %d spots", leftSpots.size()));
-        	printPointToFile(leftSpots);
-        	rightSpots = findCorrespondSpots(leftSpots);
+        	lhsSpotList = findSpots(mYuv);
+        	Log.d("findspot", String.format("Found %d spots", lhsSpotList.size()));
+        	writePointToFile(lhsSpotList, String.format("lhspoint_%d.txt", num));
         	
-        	double[] point;
-        	for(int i = 0; i < leftSpots.size(); i++) {
+        	Point rhsSpot;
+        	Point3 point;
+        	for(Point lhsSpot : lhsSpotList) {
+        		rhsSpot = findCorrespondSpots(lhsSpot);
         		
-        		point = triangulation(leftSpots.get(i), rightSpots.get(i));
+        		rhsSpotList.add(rhsSpot);
         		
-        		// render by opengl
+        		point = Calculation.triangulation(lhsSpot, rhsSpot);
+        		
+        		pointList.add(point);
+        		
+        		// TODO render by opengl
         	}
+        	
+        	writePointToFile(rhsSpotList, String.format("rhspoint_%d.txt", num));
+        	writePoint3ToFile(pointList, String.format("point_%d.txt", num));
         	
         	ScannerActivity.viewMode = ScannerActivity.VIEW_MODE_RGBA;
         	
-//        	Mat thresholdImage = new Mat(getFrameHeight() + getFrameHeight() / 2, getFrameWidth(), CvType.CV_8UC1);
+        	break;
+        	
+/*//        	Mat thresholdImage = new Mat(getFrameHeight() + getFrameHeight() / 2, getFrameWidth(), CvType.CV_8UC1);
 //        	Imgproc.cvtColor(mYuv, mRgba, Imgproc.COLOR_YUV420sp2RGB, 4);
 //        	Mat line = mRgba.clone();
 //        	for(int k = 0; k < mYuv.channels(); k++) {
@@ -308,8 +322,8 @@ class View extends CvViewBase {
 //
 //            }
             
-            //FindFeatures(mGraySubmat.getNativeObjAddr(), mRgba.getNativeObjAddr());
-            break;
+//            FindFeatures(mGraySubmat.getNativeObjAddr(), mRgba.getNativeObjAddr());
+            break; */
         }
 
         Bitmap bmp = Bitmap.createBitmap(getFrameWidth(), getFrameHeight(), Bitmap.Config.ARGB_8888);
@@ -343,13 +357,6 @@ class View extends CvViewBase {
         }
     }
 
-//    public native void FindFeatures(long matAddrGr, long matAddrRgba);
-//
-//    static {
-//        System.loadLibrary("mixed_sample");
-//    }
-    
-    
     private Boolean isTarget(double[] p) {
     	return ((int)p[0] == 255);
     }
@@ -389,27 +396,24 @@ class View extends CvViewBase {
     	return spots;
     }
     
-    private ArrayList<Point> findCorrespondSpots(ArrayList<Point> leftSpots) {
-    	ArrayList<Point> rightSpots = new ArrayList<Point>();
+    private Point findCorrespondSpots(Point lhsSpots) {
+    	Point rhsSpot = new Point();
     	
-    	// to do
+    	// TODO
+    	double[] line = Calculation.calc(lhsSpots);
     	
-    	return rightSpots;
+    	Log.d("line: ", String.format("b: %f k: %f", line[0], line[1]));
+    	
+    	return rhsSpot;
     }
     
-    private double[] triangulation(Point left, Point right) {
-    	double[] point = new double[3];
-    	
-    	return point;
-    }
-    
-    private void printPointToFile(ArrayList<Point> spots) {
+    private void writePointToFile(ArrayList<Point> points, String filename) {
     	File file = new File(android.os.Environment.getExternalStorageDirectory()
-				+ "/capstone/point_" + Integer.toString(num) + ".txt");
+				+ "/capstone/" + filename);
     	
 		try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-			for(Point point : spots)
+			for(Point point : points)
 				writer.write(String.format("%3d %3d\n", (int) point.x, (int) point.y));
 			writer.flush();
 			writer.close();
@@ -418,4 +422,26 @@ class View extends CvViewBase {
 			e.printStackTrace();
 		}
     }
+    
+    private void writePoint3ToFile(ArrayList<Point3> points, String filename) {
+    	File file = new File(android.os.Environment.getExternalStorageDirectory()
+				+ "/capstone/" + filename);
+    	
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+			for(Point3 point : points)
+				writer.write(String.format("%3d %3d %3d\n", (int) point.x, (int) point.y, (int) point.z));
+			writer.flush();
+			writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+    
+//  public native void FindFeatures(long matAddrGr, long matAddrRgba);
+//    
+//        static {
+//            System.loadLibrary("mixed_sample");
+//        }
 }
