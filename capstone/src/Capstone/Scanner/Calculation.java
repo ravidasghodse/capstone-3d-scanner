@@ -136,8 +136,8 @@ public class Calculation {
 					-(LINE_R[1][2]-LINE_R[0][2])*LINE_R[0][0]/(LINE_R[1][0]-LINE_R[0][0])-LINE_LR[0][2]+LINE_R[0][2])
 					/((LINE_LR[1][2]-LINE_LR[0][2])/(LINE_LR[1][0]-LINE_LR[0][0])-(LINE_R[1][2]-LINE_R[0][2])/(LINE_R[1][0]-LINE_R[0][0]));
 		
-		point.y = LINE_LR[0][1]+(LINE_LR[1][1]-LINE_LR[0][1])*(point.x-LINE[0][0])/(LINE_LR[1][0]-LINE_LR[0][0]);
-		point.z = LINE_LR[0][2]+(LINE_LR[1][2]-LINE_LR[0][2])*(point.x-LINE[0][0])/(LINE_LR[1][0]-LINE_LR[0][0]);
+		point.y = LINE_LR[0][1]+(LINE_LR[1][1]-LINE_LR[0][1])*(point.x-LINE_LR[0][0])/(LINE_LR[1][0]-LINE_LR[0][0]);
+		point.z = LINE_LR[0][2]+(LINE_LR[1][2]-LINE_LR[0][2])*(point.x-LINE_LR[0][0])/(LINE_LR[1][0]-LINE_LR[0][0]);
 		
     	return point;
     }
