@@ -1,4 +1,4 @@
-package test.opengl;
+package Capstone.Scanner;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
