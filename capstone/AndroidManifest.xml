@@ -26,7 +26,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".OpenGLActivity" />
+        <activity android:name=".OpenGLActivity"></activity>
     </application>
 
     <uses-permission android:name="android.permission.CAMERA" />
