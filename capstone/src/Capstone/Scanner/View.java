@@ -400,7 +400,7 @@ class View extends CvViewBase {
     	Point rhsSpot = new Point();
     	
     	// TODO
-    	double[] line = Calculation.calc(lhsSpots);
+    	double[] line = Calculation.projection(lhsSpots);
     	
     	Log.d("line: ", String.format("b: %f k: %f", line[0], line[1]));
     	
@@ -438,6 +438,7 @@ class View extends CvViewBase {
 			e.printStackTrace();
 		}
     }
+    
     
 //  public native void FindFeatures(long matAddrGr, long matAddrRgba);
 //    
