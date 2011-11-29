@@ -29,6 +29,12 @@ public class Calculation {
 	
 	final static double T[]         = {-42.76721, -0.23691, 0.08279};
 	
+	static double LINE_L[][]   = {{0, 0, 1}, 
+                                  {0, 0, 2}};
+
+	static double LINE_R[][]   = {{0, 0, 0}, 
+                                  {0, 0, 0}};
+	
 	private static void adjust(double XY[], double XY_P[],double Kc[], double KK[][])
 	{
 		double tempXY[] = new double[2];
@@ -56,17 +62,12 @@ public class Calculation {
 		}
 	}
 	
-	public static double[] calc(Point p){
+	public static double[] projection(Point p){
 		double XY_L[] = {p.x, p.y};
-		double XY_P_L[]          = {0, 0, 1};
-		double LINE_L[][]        = {{0, 0, 1}, 
-				                    {0, 0, 2}};
+		double XY_P_L[]     = {0, 0, 1};
 		
-		double LINE_R[][]        = {{0, 0, 0}, 
-				                    {0, 0, 0}};
-		
-		double LINE_P_R[][]      = {{0, 0, 1}, 
-				                    {0, 0, 0}};
+		double LINE_P_R[][] = {{0, 0, 1}, 
+				               {0, 0, 0}};
 		
 		int i, j;
 
@@ -118,8 +119,8 @@ public class Calculation {
 	
 	// TODO 
 	public static Point3 triangulation(Point left, Point right) {
-    	Point3 point = new Point3();
-    	
+		Point3 point = new Point3();
+		
     	return point;
     }
 	
