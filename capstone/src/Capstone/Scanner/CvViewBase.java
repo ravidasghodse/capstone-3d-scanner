@@ -146,20 +146,17 @@ package Capstone.Scanner;
 //    }
 //}
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Paint.Style;
+import android.graphics.RectF;
 import android.hardware.Camera;
-import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PreviewCallback;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -179,6 +176,7 @@ public abstract class CvViewBase extends SurfaceView implements SurfaceHolder.Ca
         super(context);
         mHolder = getHolder();
         mHolder.addCallback(this);
+        mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         Log.i(TAG, "Instantiated new " + this.getClass());
     }
 
@@ -243,13 +241,7 @@ public abstract class CvViewBase extends SurfaceView implements SurfaceHolder.Ca
 
     public void surfaceCreated(SurfaceHolder holder) {
         Log.i(TAG, "surfaceCreated");
-        mCamera = Camera.open(0);
-        try {
-        	mCamera.setPreviewDisplay(holder);
-        } catch (IOException e) {
-        	mCamera.release();
-        	mCamera = null;
-        }
+//        mCamera = Camera.open(0);
 //        mCamera.setPreviewCallback(new PreviewCallback() {
 //            public void onPreviewFrame(byte[] data, Camera camera) {
 //                synchronized (CvViewBase.this) {
@@ -258,6 +250,16 @@ public abstract class CvViewBase extends SurfaceView implements SurfaceHolder.Ca
 //                }
 //            }
 //        });
+		if(mCamera == null) {
+			mCamera = Camera.open();//启动服务
+			
+			try {
+				mCamera.setPreviewDisplay(holder);//设置预览
+			} catch (IOException e) {
+				mCamera.release();//释放
+				mCamera = null;
+			}
+		}
         (new Thread(this)).start();
     }
 
@@ -285,10 +287,10 @@ public abstract class CvViewBase extends SurfaceView implements SurfaceHolder.Ca
             synchronized (this) {
                 try {
                     this.wait();
-        			if(mCamera !=null){
+        			if(mCamera != null)
         				mCamera.takePicture(null, null,pic);
-        			}
-                    bmp = processFrame(mFrame);
+        			if(mFrame != null)
+        				bmp = processFrame(mFrame);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -297,7 +299,18 @@ public abstract class CvViewBase extends SurfaceView implements SurfaceHolder.Ca
             if (bmp != null) {
                 Canvas canvas = mHolder.lockCanvas();
                 if (canvas != null) {
-                	canvas.drawRect(r, new Paint());
+//                	RectF r = new RectF((canvas.getWidth() - getFrameWidth()) / 2 + 20, 
+//                			            (canvas.getHeight() - getFrameHeight()) / 2 + 20,
+//                			            (canvas.getWidth() - getFrameWidth()) / 2 + 20 + getFrameWidth(),
+//                			            (canvas.getHeight() - getFrameHeight()) / 2 + 20 + getFrameHeight());
+//                	
+//                	Paint paint = new Paint();
+//        			paint.setColor(Color.YELLOW);
+//        			// paint.setAlpha(0x80);
+//        			paint.setStyle(Style.STROKE);
+//        			paint.setAntiAlias(true);
+//        			paint.setStrokeWidth(2);
+//                	canvas.drawRect(r, new Paint());
                     canvas.drawBitmap(bmp, (canvas.getWidth() - getFrameWidth()) / 2, (canvas.getHeight() - getFrameHeight()) / 2, null);
                     mHolder.unlockCanvasAndPost(canvas);
                 }
@@ -306,47 +319,12 @@ public abstract class CvViewBase extends SurfaceView implements SurfaceHolder.Ca
         }
     }
     
-    public Camera.PictureCallback pic = new Camera.PictureCallback(){
+	public Camera.PictureCallback pic = new Camera.PictureCallback(){
 
 		public void onPictureTaken(byte[] data, Camera camera) {
-			// TODO Auto-generated method stub
 			Log.d("takephoto", "lalalalalalal!");
-			synchronized (CvViewBase.this) {
-				mFrame = data;
-				CvViewBase.this.notify();
-			}
-//			Bitmap mBitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-//			
-//			File imagefile = new File(android.os.Environment.getExternalStorageDirectory()
-//					+ "/capstone/camera" + Integer.toString(num++) + ".jpg");
-//			try {
-//				BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(imagefile));
-//				mBitmap.compress(Bitmap.CompressFormat.JPEG, 80, os);
-//				
-//				os.flush();
-//				os.close();
-//				
-////				Canvas canvas = holder.lockCanvas();
-////				canvas.drawBitmap(mBitmap, 0, 0, null);
-////				holder.unlockCanvasAndPost(canvas);
-//				mCamera.startPreview();
-//				
-////		        float[] dis = new float[3];
-////		        Parameters parameters = mCamera.getParameters();
-////		        parameters.getFocusDistances(dis);
-////		        Log.d("focal dis", Float.toString(dis[0]) + " " + Float.toString(dis[1]) + " " + Float.toString(dis[2]));
-////		        
-////		        Log.d("focal length", Float.toString(parameters.getFocalLength()));
-//				
-//			} catch (FileNotFoundException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//			Log.d("takephoto", "lalalalalalal!");
+			mFrame = data;
 		}
-		
 	};
+    
 }

@@ -8,6 +8,9 @@ public class PointCloud {
 	public static int numImages;
 	public static float[] vertices;
 	
+	public static float xlook;
+	public static float ylook;
+	
 	//image process 2
 	public static final float coefficient = 0.2f;
 	public static ArrayList<Float> vertices_arr;

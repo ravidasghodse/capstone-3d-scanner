@@ -9,6 +9,7 @@ import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
 
+
 public class ScannerActivity extends Activity {
     private static final String TAG                = "Sample::Activity";
 
@@ -68,7 +69,7 @@ public class ScannerActivity extends Activity {
         	if(viewMode == VIEW_MODE_RGBA) {
         		intent = new Intent(ScannerActivity.this, OpenGLActivity.class);
         		startActivity(intent);
-        		viewMode = VIEW_MODE_OPENGL;
+//        		viewMode = VIEW_MODE_OPENGL;
         	}
 //        	if(viewMode == VIEW_MODE_OPENGL) {
 //        		intent = new Intent(ScannerActivity.this, OpenGLActivity.class);

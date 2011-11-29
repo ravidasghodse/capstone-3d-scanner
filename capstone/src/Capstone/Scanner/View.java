@@ -89,10 +89,11 @@ class View extends CvViewBase {
         		
         		rhsSpotList.add(rhsSpot);
         		
-        		point = Calculation.triangulation(lhsSpot, rhsSpot);
-        		
+//        		point = Calculation.triangulation(lhsSpot, rhsSpot);
+        		point = Calculation.triangulation(rhsSpot);
         		pointList.add(point);
         		
+        		PointCloud.addPoint(point);
         		// TODO render by opengl
         	}
         	

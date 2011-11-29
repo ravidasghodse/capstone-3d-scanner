@@ -112,7 +112,7 @@ public class Calculation {
 //	}
 	
 	// TODO 
-	public static Point3 triangulation(android.graphics.Point right) {
+	public static Point3 triangulation(Point right) {
 //		float point[] = new float[3];
 		Point3 point = new Point3();
 		double XY_R[] = {right.x, right.y, 1};
