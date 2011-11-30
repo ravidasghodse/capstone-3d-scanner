@@ -36,11 +36,8 @@ public class Calculation {
 	{
 		double r = XY[0]*XY[0]+XY[1]*XY[1];
 		double a = 1+Kc[0]*r+Kc[1]*r*r+Kc[4]*r*r*r;
-		double d[] = new double[2];
-		d[0] = 2*Kc[2]*XY[0]*XY[1]+Kc[3]*(r+2*XY[0]*XY[0]);
-		d[1] = Kc[2]*(r+2*XY[1]*XY[1])+2*Kc[3]*XY[0]*XY[1];
-		XY[0] = a*XY[0]+d[0]+KK[0][2];
-		XY[1] = a*XY[1]+d[1]+KK[1][2];
+		XY[0] = a*XY[0]+2*Kc[2]*XY[0]*XY[1]+Kc[3]*(r+2*XY[0]*XY[0]);
+ 		XY[1] = a*XY[1]+Kc[2]*(r+2*XY[1]*XY[1])+2*Kc[3]*XY[0]*XY[1];
 	}
 	
 	private static void product(double A[][], double B[], double C[])
@@ -53,8 +50,20 @@ public class Calculation {
 		}
 	}
 	
+	private static void direction(double LINE[][], double KK[][])
+	{
+		LINE[1][0] = LINE[0][0]*(KK[0][0]);
+		LINE[1][1] = LINE[0][1]*(KK[1][1]);
+		LINE[1][2] = 0;
+
+		LINE[0][0] = LINE[0][0]*(KK[0][0]+Par);
+		LINE[0][1] = LINE[0][1]*(KK[1][1]+Par);
+		LINE[0][2] = Par;
+		
+	}
+	
 	public static double[] projection(Point p){
-		double XY_L[] = {p.x, p.y};
+		double XY_L[] = {p.x, p.y, 1};
 		double LINE_L[][]   = {{0, 0, 0}, 
                 			   {0, 0, 0}};
 		double LINE_R[][]   = {{0, 0, 0}, 
@@ -67,15 +76,9 @@ public class Calculation {
 		
 		product(invKK_L, XY_L, LINE_L[0]);
 	
-		adjust(XY_L, Kc_L, KK_L);
+		adjust(LINE_L[0], Kc_L, KK_L);
 
-		LINE_L[0][0] = invKK_L[0][2]+LINE_L[0][0]*(KK_L[0][0]+Par);
-		LINE_L[0][1] = invKK_L[1][2]+LINE_L[0][1]*(KK_L[1][1]+Par);
-		LINE_L[0][2] = Par;
-		
-		LINE_L[1][0] = invKK_L[0][2]+LINE_L[0][0]*(KK_L[0][0]);
-		LINE_L[1][1] = invKK_L[1][2]+LINE_L[0][1]*(KK_L[1][1]);
-		LINE_L[1][2] = 0;
+		direction(LINE_L, KK_L);
 		
 		product(R, LINE_L[0], LINE_LR[0]);
 		product(R, LINE_L[1], LINE_LR[1]);
@@ -84,12 +87,12 @@ public class Calculation {
 			for (j=0;j<3;++j)
 				LINE_LR[i][j]+=T[j];
 
-		LINE_R[0][0] = (LINE_LR[0][0] - KK_R[0][2])/(LINE_LR[0][2] + KK_R[0][0]);
-		LINE_R[0][1] = (LINE_LR[0][1] - KK_R[1][2])/(LINE_LR[0][2] + KK_R[1][1]);
+		LINE_R[0][0] = LINE_LR[0][0]/(LINE_LR[0][2] + KK_R[0][0]);
+		LINE_R[0][1] = LINE_LR[0][1]/(LINE_LR[0][2] + KK_R[1][1]);
 		LINE_R[0][2] = 1;
 		
-		LINE_R[1][0] = (LINE_LR[1][0] - KK_R[0][2])/(LINE_LR[1][2] + KK_R[0][0]);
-		LINE_R[1][1] = (LINE_LR[1][1] - KK_R[1][2])/(LINE_LR[1][2] + KK_R[1][1]);
+		LINE_R[1][0] = LINE_LR[1][0]/(LINE_LR[1][2] + KK_R[0][0]);
+		LINE_R[1][1] = LINE_LR[1][1]/(LINE_LR[1][2] + KK_R[1][1]);
 		LINE_R[1][2] = 1;
 
 		product(KK_R, LINE_R[0], LINE_P_R[0]);
@@ -111,8 +114,7 @@ public class Calculation {
 //		return rSpot;
 //	}
 	
-	// TODO 
-	public static Point3 triangulation(Point right) {
+	public static Point3 triangulation(android.graphics.Point right) {
 //		float point[] = new float[3];
 		Point3 point = new Point3();
 		double XY_R[] = {right.x, right.y, 1};
@@ -122,15 +124,9 @@ public class Calculation {
 		
 		product(invKK_R, XY_R, LINE_R[0]);
 		
-		adjust(XY_R, Kc_R, KK_R);
+		adjust(LINE_R[0], Kc_R, KK_R);
 		
-		LINE_R[0][0] = invKK_R[0][2]+LINE_R[0][0]*(KK_R[0][0]+Par);
-		LINE_R[0][1] = invKK_R[1][2]+LINE_R[0][1]*(KK_R[1][1]+Par);
-		LINE_R[0][2] = Par;
-		
-		LINE_R[1][0] = invKK_R[0][2]+LINE_R[0][0]*(KK_R[0][0]);
-		LINE_R[1][1] = invKK_R[1][2]+LINE_R[0][1]*(KK_R[1][1]);
-		LINE_R[1][2] = 0;
+		direction(LINE_R, KK_R);
 		
 		point.x = ((LINE_LR[1][2]-LINE_LR[0][2])*LINE_LR[0][0]/(LINE_LR[1][0]-LINE_LR[0][0])
 					-(LINE_R[1][2]-LINE_R[0][2])*LINE_R[0][0]/(LINE_R[1][0]-LINE_R[0][0])-LINE_LR[0][2]+LINE_R[0][2])
@@ -141,20 +137,4 @@ public class Calculation {
 		
     	return point;
     }
-	
-//	public String toString(){
-//		double rslt[] = calc(XY_L);
-//		String s = "";
-//		s += rslt[0];
-//		s += " ";
-//		s += rslt[1];
-//		return s;
-//	}
-
-//	public static void main(String argv[]){
-//		Calc_test test = new Calc_test();
-//		test.XY_L[0] = 893;
-//		test.XY_L[1] = 256;
-//		System.out.println(test);
-//	}
 }
