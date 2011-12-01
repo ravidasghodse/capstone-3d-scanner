@@ -30,12 +30,10 @@ public class ScannerActivity extends Activity {
     public static final int     VIEW_MODE_RGBA      = 0;
     public static final int     VIEW_MODE_START     = 1;
     public static final int     VIEW_MODE_STOP      = 2;
-    public static final int     VIEW_MODE_FINDSPOTS = 5;
     public static final int     VIEW_MODE_OPENGL    = 6;
 
     private MenuItem            mItemPreviewRGBA;
     private MenuItem            mItemStartStop;
-    private MenuItem            mItemFindSpots;
     private MenuItem            mItemChangeView;
 
 
@@ -75,7 +73,6 @@ public class ScannerActivity extends Activity {
         Log.i(TAG, "onCreateOptionsMenu");
         mItemPreviewRGBA = menu.add("Preview RGBA");
         mItemStartStop = menu.add("Start");
-        mItemFindSpots  = menu.add("Find spots");
         mItemChangeView = menu.add("Change view");
         return true;
     }
@@ -95,8 +92,6 @@ public class ScannerActivity extends Activity {
                 timerUpdateHandler.removeCallbacks(timerUpdateTask);
               }
         }
-        else if (item == mItemFindSpots)
-            viewMode = VIEW_MODE_FINDSPOTS;
         else if (item == mItemChangeView) {
         	Intent intent;
         	if(viewMode == VIEW_MODE_RGBA) {
