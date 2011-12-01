@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.opencv.core.Point3;
 
 public class PointCloud {
+	public static int cur = 0;
 	public static int numImages;
 	public static float[] vertices;
 	
@@ -17,8 +18,11 @@ public class PointCloud {
 	public static float zavg = 0.0f;
 	
 	public static void addPoint(Point3 point) {
-		vertexList.add((float) point.x);
-		vertexList.add((float) point.y);
-		vertexList.add((float) point.z);
+		vertices[cur++] = (float) point.x;
+		vertices[cur++] = (float) point.y;
+		vertices[cur++] = (float) point.z;
+//		vertexList.add((float) point.x);
+//		vertexList.add((float) point.y);
+//		vertexList.add((float) point.z);
 	}
 }
