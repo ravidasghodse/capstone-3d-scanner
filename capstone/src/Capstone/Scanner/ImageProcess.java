@@ -30,35 +30,36 @@ public class ImageProcess {
     
 //	public void processFrame(byte[] data) {
 	public void processFrame(Bitmap mBitmap) {
-		mYuv = Utils.bitmapToMat(mBitmap);
-//		mRgba = Utils.bitmapToMat(mBitmap);
+//		mYuv = Utils.bitmapToMat(mBitmap);
+		mRgba = Utils.bitmapToMat(mBitmap);
 //		mYuv = new Mat();
 //		Imgproc.cvtColor(mRgba, mYuv, Imgproc.COLOR_RGB2YUV, 3);
 //        mYuv.put(0, 0, data);
 
-        Log.d("mYuv", String.format("col: %d  row: %d channel: %d\n", mYuv.cols(), mYuv.rows(), mYuv.channels()));
-
-    	for(int k = 0; k < mYuv.channels(); k++) {
-        	File file = new File(android.os.Environment.getExternalStorageDirectory()
-					+ "/capstone/camera" + Integer.toString(num) 
-					+ "_" + Integer.toString(k+1) + ".dat");
-        	
-			try {
-				FileWriter filewriter = new FileWriter(file);
-				BufferedWriter  fileoutData=new BufferedWriter(filewriter);
-				for(int i = 0; i < mYuv.rows(); i+=10) {
-					for(int j = 0; j < mYuv.cols(); j+=10) {
-						fileoutData.write(String.format("%6.2f ", mYuv.get(i, j)[k]));
-					}
-					fileoutData.write("\n");
-				}
-				fileoutData.flush();
-    			fileoutData.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-    	}
+//        Log.d("mYuv", String.format("col: %d  row: %d channel: %d\n", mYuv.cols(), mYuv.rows(), mYuv.channels()));
+        Log.d("mRgba", String.format("col: %d  row: %d channel: %d\n", mRgba.cols(), mRgba.rows(), mRgba.channels()));
+        
+//    	for(int k = 0; k < mYuv.channels(); k++) {
+//        	File file = new File(android.os.Environment.getExternalStorageDirectory()
+//					+ "/capstone/camera" + Integer.toString(num) 
+//					+ "_" + Integer.toString(k+1) + ".dat");
+//        	
+//			try {
+//				FileWriter filewriter = new FileWriter(file);
+//				BufferedWriter  fileoutData=new BufferedWriter(filewriter);
+//				for(int i = 0; i < mYuv.rows(); i+=10) {
+//					for(int j = 0; j < mYuv.cols(); j+=10) {
+//						fileoutData.write(String.format("%6.2f ", mYuv.get(i, j)[k]));
+//					}
+//					fileoutData.write("\n");
+//				}
+//				fileoutData.flush();
+//    			fileoutData.close();
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//    	}
         
 //        switch (ScannerActivity.viewMode) {
 //          
@@ -68,30 +69,30 @@ public class ImageProcess {
 //            
 //        case ScannerActivity.VIEW_MODE_FINDSPOTS:
 //        	
-//        	ArrayList<Point> lhsSpotList = findSpots(mYuv);
-//        	Log.d("findspot", String.format("Found %d spots", lhsSpotList.size()));
-//        	writePointToFile(lhsSpotList, String.format("lhspoint_%d.txt", num));
-//        	
-//        	Point rhsSpot;
-//        	Point3 point;
-//        	ArrayList<Point> rhsSpotList = new ArrayList<Point>();
-//        	ArrayList<Point3> pointList = new ArrayList<Point3>();
-//        	
-//        	for(Point lhsSpot : lhsSpotList) {
-//        		rhsSpot = findCorrespondSpots(lhsSpot);
-//        		
-//        		rhsSpotList.add(rhsSpot);
-//        		
-////        		point = Calculation.triangulation(lhsSpot, rhsSpot);
-//        		point = Calculation.triangulation(rhsSpot);
-//        		pointList.add(point);
-//        		
+        	ArrayList<Point> lhsSpotList = findSpots(mRgba);
+        	Log.d("findspot", String.format("Found %d spots", lhsSpotList.size()));
+        	writePointToFile(lhsSpotList, String.format("lhspoint_%d.txt", num));
+        	
+        	Point rhsSpot;
+        	Point3 point;
+        	ArrayList<Point> rhsSpotList = new ArrayList<Point>();
+        	ArrayList<Point3> pointList = new ArrayList<Point3>();
+        	
+        	for(Point lhsSpot : lhsSpotList) {
+        		rhsSpot = findCorrespondSpots(lhsSpot);
+        		
+        		rhsSpotList.add(rhsSpot);
+        		
+//        		point = Calculation.triangulation(lhsSpot, rhsSpot);
+        		point = Calculation.triangulation(rhsSpot);
+        		pointList.add(point);
+        		
 //        		PointCloud.addPoint(point);
-//        		// TODO render by opengl
-//        	}
-//        	
-//        	writePointToFile(rhsSpotList, String.format("rhspoint_%d.txt", num));
-//        	writePoint3ToFile(pointList, String.format("point_%d.txt", num));
+        		// TODO render by opengl
+        	}
+        	
+        	writePointToFile(rhsSpotList, String.format("rhspoint_%d.txt", num));
+        	writePoint3ToFile(pointList, String.format("point_%d.txt", num));
         	
         	ScannerActivity.viewMode = ScannerActivity.VIEW_MODE_RGBA;
         	
@@ -228,17 +229,18 @@ public class ImageProcess {
     	ArrayList<Point> spots = new ArrayList<Point>();
     	
     	double[] p;
-    	int nStart = -1, nEnd = mat.cols();
+    	int cols = mat.cols()/2;
+    	int nStart = -1, nEnd = cols;
         int start, end;
-        for(int i = 0; i < 480; i++) {
+        for(int i = 0; i < mat.rows(); i+=10) {
         	start = nStart;
         	end = nEnd;
-        	while(++start < mat.cols() && !isTarget(mat.get(i, start)));
+        	while(++start < cols && !isTarget(mat.get(i, start)));
         	while(--end > -1 && end > start && !isTarget(mat.get(i, end)));
         	
         	if(end > start) {
         		nStart = Math.max(start - 10, 0);
-        		nEnd = Math.min(end + 10, mat.cols()-1);
+        		nEnd = Math.min(end + 10, cols);
         	} else {
         		nStart = -1;
         		nEnd = mat.cols();
@@ -248,9 +250,9 @@ public class ImageProcess {
 //        	Log.d("range", String.format("nStart = %d, nEnd = %d", nStart, nEnd));
         	
         	while(end > start) {
-        		p = mYuv.get(i, start);
+        		p = mRgba.get(i, start);
 				if(isTarget(p)) {
-					spots.add(new Point(i, start));
+					spots.add(new Point(start, i));
 				}
 				start++;
         	}
@@ -260,12 +262,33 @@ public class ImageProcess {
     }
     
     private Point findCorrespondSpots(Point lhsSpots) {
+    	ArrayList<Point> candidate = new ArrayList<Point>();
     	Point rhsSpot = new Point();
     	
     	// TODO
     	double[] line = Calculation.projection(lhsSpots);
     	
     	Log.d("line: ", String.format("b: %f k: %f", line[0], line[1]));
+    	
+    	int x, y;
+    	for(int i = 0; i < mRgba.cols()/2; i++) {
+    		x = i + mRgba.cols()/2;
+    		y = (int) (line[1]*x + line[0]);
+			if(isTarget(mRgba.get(y, x))) {
+				candidate.add(new Point(x, y));
+			}
+    	}
+    	
+    	int sumX = 0, sumY = 0;
+    	
+    	for(Point p:candidate) {
+    		sumX += p.x;
+    		sumY += p.y;
+    	}
+    	if(candidate.size() > 0) {
+	    	rhsSpot.x = sumX / candidate.size();
+	    	rhsSpot.y = sumY / candidate.size();
+    	}
     	
     	return rhsSpot;
     }
