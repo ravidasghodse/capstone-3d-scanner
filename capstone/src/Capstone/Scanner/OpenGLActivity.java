@@ -1,5 +1,12 @@
 package Capstone.Scanner;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import org.opencv.core.Point3;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.opengl.GLSurfaceView;
@@ -19,16 +26,18 @@ public class OpenGLActivity extends Activity {
 	    @Override
 	    protected void onCreate(Bundle savedInstanceState) {
 	        super.onCreate(savedInstanceState);
-	        PointCloud.vertices = new float[6];
-	        for (int i =0; i < 6; i++){
-	        	PointCloud.vertices[i] = (float) (0.1*i + 1);
-	        }
+//	        PointCloud.vertices = new float[3];
+//	        for (int i = 0; i < 3; i++){
+//	        	PointCloud.vertices[i] = 0;
+//	        }
+//	        PointCloud.cur = 3;
+	        
 			PointCloud.xlook = 0;
 			PointCloud.ylook = 0;
 	        mTestHarness = new TouchView(this);
 	        mTestHarness.setEGLConfigChooser(false);
 	        mTestHarness.setRenderer(new CloudRenderer(this));
-	        //mTestHarness.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+//	        mTestHarness.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 	        mTestHarness.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 	        setContentView(mTestHarness);
 	    }
@@ -61,7 +70,23 @@ public class OpenGLActivity extends Activity {
 	        } else if(item == mItemExit) {
 	        	this.finish();
 	        } else if(item == mItemSave) {
+	        	File file = new File(android.os.Environment.getExternalStorageDirectory()
+	    				+ "/capstone/" + "model.txt");
 	        	
+	    		try {
+	    			if(!file.exists()){
+	    				file.createNewFile();
+	    			}
+	    			
+	    			BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+	    			for(int i = 0; i < PointCloud.cur; i+=3)
+	    				writer.write(String.format("%.3f %.3f %.3f\n", PointCloud.vertices[i], PointCloud.vertices[i+1], PointCloud.vertices[i+2]));
+	    			writer.flush();
+	    			writer.close();
+	    		} catch (IOException e) {
+	    			// TODO Auto-generated catch block
+	    			e.printStackTrace();
+	    		}
 	        }
 	        return true;
 	    }

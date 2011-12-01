@@ -45,7 +45,7 @@ public class ScannerActivity extends Activity {
 	Handler timerUpdateHandler;
 	boolean timelapseRunning = false;
 	int currentTime = 0;
-	final int SECONDS_BETWEEN_PHOTOS = 2;
+	final int SECONDS_BETWEEN_PHOTOS = 1;
     
     public static int           viewMode           = VIEW_MODE_RGBA;
     
@@ -63,6 +63,7 @@ public class ScannerActivity extends Activity {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		
+		PointCloud.vertices = new float[1000];
 		timerUpdateHandler = new Handler();
 		imageProcess = new ImageProcess(1080, 3840);
 		preview = new Preview(this);

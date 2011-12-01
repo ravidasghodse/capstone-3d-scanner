@@ -96,8 +96,8 @@ public class ImageProcess {
     	
     	double[] p;
     	int cols = mat.cols()/2;
-    	final int xMin = cols/8, xMax = cols - xMin;
-    	final int yMin = mat.rows()/8, yMax = mat.rows() - yMin;
+    	final int xMin = 0 /*cols/8*/, xMax = cols - xMin;
+    	final int yMin = 0 /*mat.rows()/8*/, yMax = mat.rows() - yMin;
     	
     	int nStart = xMin - 1, nEnd = xMax;
         int start, end;
