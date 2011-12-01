@@ -158,173 +158,174 @@ import android.graphics.Paint.Style;
 import android.graphics.RectF;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
+import android.os.Handler;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-public abstract class CvViewBase extends SurfaceView implements SurfaceHolder.Callback, Runnable {
-    private static final String TAG = "Sample::SurfaceView";
+public abstract class CvViewBase extends SurfaceView implements
+		SurfaceHolder.Callback, Runnable {
+	private static final String TAG = "Sample::SurfaceView";
 
-    private Camera              mCamera;
-    private SurfaceHolder       mHolder;
-    private int                 mFrameWidth;
-    private int                 mFrameHeight;
-    private byte[]              mFrame;
-    private boolean             mThreadRun;
+	public Camera mCamera;
+	private SurfaceHolder mHolder;
+	private int mFrameWidth;
+	private int mFrameHeight;
+	private byte[] mFrame;
+	private boolean mThreadRun;
+	
+	public CvViewBase(Context context) {
+		super(context);
+		mHolder = getHolder();
+		mHolder.addCallback(this);
+		mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+		Log.i(TAG, "Instantiated new " + this.getClass());
+	}
 
-    public CvViewBase(Context context) {
-        super(context);
-        mHolder = getHolder();
-        mHolder.addCallback(this);
-        mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-        Log.i(TAG, "Instantiated new " + this.getClass());
-    }
+	public int getFrameWidth() {
+		return mFrameWidth;
+	}
 
-    public int getFrameWidth() {
-        return mFrameWidth;
-    }
+	public int getFrameHeight() {
+		return mFrameHeight;
+	}
 
-    public int getFrameHeight() {
-        return mFrameHeight;
-    }
+	public void surfaceChanged(SurfaceHolder _holder, int format, int width,
+			int height) {
+		Log.i(TAG, "surfaceCreated");
+		if (mCamera != null) {
+			Camera.Parameters params = mCamera.getParameters();
 
-    public void surfaceChanged(SurfaceHolder _holder, int format, int width, int height) {
-        Log.i(TAG, "surfaceCreated");
-        if (mCamera != null) {
-            Camera.Parameters params = mCamera.getParameters();
-            
-            // show supported parameters of camera
-            Camera.CameraInfo info = new Camera.CameraInfo();
-            for(int i = 0; i < Camera.getNumberOfCameras(); i++) {
-	            Camera.getCameraInfo(i, info);
-	            Log.d(String.format("param:camera%d", i), String.format("facing: %d, orientation: %d", info.facing, info.orientation));
-            }
-            Log.d("param:focus", params.getSupportedFocusModes().toString());
-//            Log.d("param:preview fps", params.getSupportedPreviewFrameRates().toString());
-//            Log.d("param:preview framerate", params.getSupportedPreviewFrameRates().toString());
-            // end of parameters
+			// show supported parameters of camera
+			Camera.CameraInfo info = new Camera.CameraInfo();
+			for (int i = 0; i < Camera.getNumberOfCameras(); i++) {
+				Camera.getCameraInfo(i, info);
+				Log.d(String.format("param:camera%d", i), String.format(
+						"facing: %d, orientation: %d", info.facing,
+						info.orientation));
+			}
+			Log.d("param:focus", params.getSupportedFocusModes().toString());
+			// Log.d("param:preview fps",
+			// params.getSupportedPreviewFrameRates().toString());
+			// Log.d("param:preview framerate",
+			// params.getSupportedPreviewFrameRates().toString());
+			// end of parameters
 
-            List<Camera.Size> picSizes = params.getSupportedPictureSizes();
-            for(Camera.Size size : picSizes)
-            	Log.d("param:pic size", String.format("width = %d height = %d", size.width, size.height));
-            
-            
-            List<Camera.Size> sizes = params.getSupportedPreviewSizes();
-            mFrameWidth = width;
-            mFrameHeight = height;
+			List<Camera.Size> picSizes = params.getSupportedPictureSizes();
+			for (Camera.Size size : picSizes)
+				Log.d("param:pic size", String.format("width = %d height = %d",
+						size.width, size.height));
 
-            // selecting optimal camera preview size
-            {
-                double minDiff = Double.MAX_VALUE;
-                for (Camera.Size size : sizes) {
-                	Log.d("param:preview size", String.format("width = %d height = %d", size.width, size.height));
-                    if (Math.abs(size.height - height) < minDiff) {
-                        mFrameWidth = size.width;
-                        mFrameHeight = size.height;
-                        minDiff = Math.abs(size.height - height);
-                    }
-                }
-            }
+			List<Camera.Size> sizes = params.getSupportedPreviewSizes();
+			mFrameWidth = width;
+			mFrameHeight = height;
 
-            params.setFocusMode(Camera.Parameters.FOCUS_MODE_INFINITY);
-           
-            params.setPreviewSize(getFrameWidth(), getFrameHeight());
-            mCamera.setParameters(params);
-            try {
+			// selecting optimal camera preview size
+			{
+				double minDiff = Double.MAX_VALUE;
+				for (Camera.Size size : sizes) {
+					Log.d("param:preview size", String.format(
+							"width = %d height = %d", size.width, size.height));
+					if (Math.abs(size.height - height) < minDiff) {
+						mFrameWidth = size.width;
+						mFrameHeight = size.height;
+						minDiff = Math.abs(size.height - height);
+					}
+				}
+			}
+
+			params.setFocusMode(Camera.Parameters.FOCUS_MODE_MACRO);
+			params.setPreviewSize(getFrameWidth(), getFrameHeight());
+			mCamera.setParameters(params);
+			try {
 				mCamera.setPreviewDisplay(null);
 			} catch (IOException e) {
 				Log.e(TAG, "mCamera.setPreviewDisplay fails: " + e);
 			}
-            mCamera.startPreview();
-        }
-    }
+			mCamera.startPreview();
+		}
+	}
 
-    public void surfaceCreated(SurfaceHolder holder) {
-        Log.i(TAG, "surfaceCreated");
-//        mCamera = Camera.open(0);
-//        mCamera.setPreviewCallback(new PreviewCallback() {
-//            public void onPreviewFrame(byte[] data, Camera camera) {
-//                synchronized (CvViewBase.this) {
-//                    mFrame = data;
-//                    CvViewBase.this.notify();
-//                }
-//            }
-//        });
-		if(mCamera == null) {
-			mCamera = Camera.open();//启动服务
-			
+	public void surfaceCreated(SurfaceHolder holder) {
+		Log.i(TAG, "surfaceCreated");
+		// mCamera = Camera.open(0);
+		// mCamera.setPreviewCallback(new PreviewCallback() {
+		// public void onPreviewFrame(byte[] data, Camera camera) {
+		// synchronized (CvViewBase.this) {
+		// mFrame = data;
+		// CvViewBase.this.notify();
+		// }
+		// }
+		// });
+		if (mCamera == null) {
+			mCamera = Camera.open();
+
 			try {
-				mCamera.setPreviewDisplay(holder);//设置预览
+				mCamera.setPreviewDisplay(holder);
 			} catch (IOException e) {
-				mCamera.release();//释放
+				mCamera.release();
 				mCamera = null;
 			}
 		}
-        (new Thread(this)).start();
-    }
+		// (new Thread(this)).start();
+	}
 
-    public void surfaceDestroyed(SurfaceHolder holder) {
-        Log.i(TAG, "surfaceDestroyed");
-        mThreadRun = false;
-        if (mCamera != null) {
-            synchronized (this) {
-                mCamera.stopPreview();
-                mCamera.setPreviewCallback(null);
-                mCamera.release();
-                mCamera = null;
-            }
-        }
-    }
-
-    protected abstract Bitmap processFrame(byte[] data);
-
-    public void run() {
-        mThreadRun = true;
-        Log.i(TAG, "Starting processing thread");
-        while (mThreadRun) {
-            Bitmap bmp = null;
-
-            synchronized (this) {
-                try {
-                    this.wait();
-        			if(mCamera != null)
-        				mCamera.takePicture(null, null,pic);
-        			if(mFrame != null)
-        				bmp = processFrame(mFrame);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            if (bmp != null) {
-                Canvas canvas = mHolder.lockCanvas();
-                if (canvas != null) {
-//                	RectF r = new RectF((canvas.getWidth() - getFrameWidth()) / 2 + 20, 
-//                			            (canvas.getHeight() - getFrameHeight()) / 2 + 20,
-//                			            (canvas.getWidth() - getFrameWidth()) / 2 + 20 + getFrameWidth(),
-//                			            (canvas.getHeight() - getFrameHeight()) / 2 + 20 + getFrameHeight());
-//                	
-//                	Paint paint = new Paint();
-//        			paint.setColor(Color.YELLOW);
-//        			// paint.setAlpha(0x80);
-//        			paint.setStyle(Style.STROKE);
-//        			paint.setAntiAlias(true);
-//        			paint.setStrokeWidth(2);
-//                	canvas.drawRect(r, new Paint());
-                    canvas.drawBitmap(bmp, (canvas.getWidth() - getFrameWidth()) / 2, (canvas.getHeight() - getFrameHeight()) / 2, null);
-                    mHolder.unlockCanvasAndPost(canvas);
-                }
-                bmp.recycle();
-            }
-        }
-    }
-    
-	public Camera.PictureCallback pic = new Camera.PictureCallback(){
-
-		public void onPictureTaken(byte[] data, Camera camera) {
-			Log.d("takephoto", "lalalalalalal!");
-			mFrame = data;
+	public void surfaceDestroyed(SurfaceHolder holder) {
+		Log.i(TAG, "surfaceDestroyed");
+		mThreadRun = false;
+		if (mCamera != null) {
+			synchronized (this) {
+				mCamera.stopPreview();
+				mCamera.setPreviewCallback(null);
+				mCamera.release();
+				mCamera = null;
+			}
 		}
-	};
-    
+	}
+
+	protected abstract Bitmap processFrame(byte[] data);
+
+//	public void run() {
+//		mThreadRun = true;
+//		Log.i(TAG, "Starting processing thread");
+//		while (mThreadRun) {
+//			Bitmap bmp = null;
+//
+//			synchronized (this) {
+//				try {
+//					this.wait();
+//					if (mFrame != null)
+//						bmp = processFrame(mFrame);
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//			if (bmp != null) {
+//				Canvas canvas = mHolder.lockCanvas();
+//				if (canvas != null) {
+//					// RectF r = new RectF((canvas.getWidth() - getFrameWidth())
+//					// / 2 + 20,
+//					// (canvas.getHeight() - getFrameHeight()) / 2 + 20,
+//					// (canvas.getWidth() - getFrameWidth()) / 2 + 20 +
+//					// getFrameWidth(),
+//					// (canvas.getHeight() - getFrameHeight()) / 2 + 20 +
+//					// getFrameHeight());
+//					//
+//					// Paint paint = new Paint();
+//					// paint.setColor(Color.YELLOW);
+//					// // paint.setAlpha(0x80);
+//					// paint.setStyle(Style.STROKE);
+//					// paint.setAntiAlias(true);
+//					// paint.setStrokeWidth(2);
+//					// canvas.drawRect(r, new Paint());
+//					canvas.drawBitmap(bmp,
+//							(canvas.getWidth() - getFrameWidth()) / 2,
+//							(canvas.getHeight() - getFrameHeight()) / 2, null);
+//					mHolder.unlockCanvasAndPost(canvas);
+//				}
+//				bmp.recycle();
+//			}
+//		}
+//	}
+
 }

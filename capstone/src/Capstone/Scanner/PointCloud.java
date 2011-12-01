@@ -13,12 +13,12 @@ public class PointCloud {
 	
 	//image process 2
 	public static final float coefficient = 0.2f;
-	public static ArrayList<Float> vertices_arr;
+	public static ArrayList<Float> vertexList;
 	public static float zavg = 0.0f;
 	
 	public static void addPoint(Point3 point) {
-		vertices_arr.add((float) point.x);
-		vertices_arr.add((float) point.y);
-		vertices_arr.add((float) point.z);
+		vertexList.add((float) point.x);
+		vertexList.add((float) point.y);
+		vertexList.add((float) point.z);
 	}
 }

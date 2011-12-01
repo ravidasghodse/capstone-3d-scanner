@@ -225,27 +225,27 @@ class View extends CvViewBase {
         return null;
     }
 
-    @Override
-    public void run() {
-        super.run();
-
-        synchronized (this) {
-            // Explicitly deallocate Mats
-            if (mYuv != null)
-                mYuv.release();
-            if (mRgba != null)
-                mRgba.release();
-            if (mGraySubmat != null)
-                mGraySubmat.release();
-            if (mIntermediateMat != null)
-                mIntermediateMat.release();
-
-            mYuv = null;
-            mRgba = null;
-            mGraySubmat = null;
-            mIntermediateMat = null;
-        }
-    }
+//    @Override
+//    public void run() {
+//        super.run();
+//
+//        synchronized (this) {
+//            // Explicitly deallocate Mats
+//            if (mYuv != null)
+//                mYuv.release();
+//            if (mRgba != null)
+//                mRgba.release();
+//            if (mGraySubmat != null)
+//                mGraySubmat.release();
+//            if (mIntermediateMat != null)
+//                mIntermediateMat.release();
+//
+//            mYuv = null;
+//            mRgba = null;
+//            mGraySubmat = null;
+//            mIntermediateMat = null;
+//        }
+//    }
 
     private Boolean isTarget(double[] p) {
     	return ((int)p[0] == 255);
@@ -328,6 +328,12 @@ class View extends CvViewBase {
 			e.printStackTrace();
 		}
     }
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		
+	}
     
     
 //  public native void FindFeatures(long matAddrGr, long matAddrRgba);
