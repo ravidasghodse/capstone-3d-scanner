@@ -23,7 +23,6 @@ import android.view.SurfaceView;
 public class Preview extends SurfaceView implements SurfaceHolder.Callback {
 	private SurfaceHolder holder = null;
 	private Camera mCamera = null;
-	private Bitmap mBitmap = null;
 
     private int                 mFrameWidth;
     private int                 mFrameHeight;
@@ -87,19 +86,19 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback {
         parameters.setPreviewSize(getFrameWidth(), getFrameHeight());
         mCamera.setParameters(parameters);
 		
-		mCamera.startPreview();//开始预览
+		mCamera.startPreview();
 	}
 
 	public void surfaceCreated(SurfaceHolder holder) {
 		Log.i("TAG", "surfaceCreated");
 		// TODO Auto-generated method stub
 		if(mCamera == null) {
-			mCamera = Camera.open(2);//启动服务
+			mCamera = Camera.open(2);
 			
 			try {
-				mCamera.setPreviewDisplay(holder);//设置预览
+				mCamera.setPreviewDisplay(holder);
 			} catch (IOException e) {
-				mCamera.release();//释放
+				mCamera.release();
 				mCamera = null;
 			}
 		}
@@ -109,7 +108,7 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback {
 		Log.i("TAG", "surfaceDestroyed");
 		// TODO Auto-generated method stub
 		if(mCamera != null) {
-			mCamera.stopPreview();//停止预览
+			mCamera.stopPreview();
 			mCamera.setPreviewCallback(null);
 			mCamera.release();
 			mCamera = null;
