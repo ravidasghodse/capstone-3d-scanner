@@ -45,7 +45,7 @@ public class ScannerActivity extends Activity {
 	Handler timerUpdateHandler;
 	boolean timelapseRunning = false;
 	int currentTime = 0;
-	final int SECONDS_BETWEEN_PHOTOS = 10;
+	final int SECONDS_BETWEEN_PHOTOS = 2;
     
     public static int           viewMode           = VIEW_MODE_RGBA;
     
