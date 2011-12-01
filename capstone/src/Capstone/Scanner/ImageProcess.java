@@ -61,17 +61,9 @@ public class ImageProcess {
 //			}
 //    	}
         
-//        switch (ScannerActivity.viewMode) {
-//          
-//        case ScannerActivity.VIEW_MODE_RGBA:
-//            Imgproc.cvtColor(mYuv, mRgba, Imgproc.COLOR_YUV420sp2RGB, 4);
-//            break;
-//            
-//        case ScannerActivity.VIEW_MODE_FINDSPOTS:
-//        	
         	ArrayList<Point> lhsSpotList = findSpots(mRgba);
         	Log.d("findspot", String.format("Found %d spots", lhsSpotList.size()));
-        	writePointToFile(lhsSpotList, String.format("lhspoint_%d.txt", num));
+//        	writePointToFile(lhsSpotList, String.format("lhspoint_%d.txt", num));
         	
         	Point rhsSpot;
         	Point3 point;
@@ -87,11 +79,11 @@ public class ImageProcess {
         		point = Calculation.triangulation(rhsSpot);
         		pointList.add(point);
         		
-//        		PointCloud.addPoint(point);
+        		PointCloud.addPoint(point);
         		// TODO render by opengl
         	}
         	
-        	writePointToFile(rhsSpotList, String.format("rhspoint_%d.txt", num));
+//        	writePointToFile(rhsSpotList, String.format("rhspoint_%d.txt", num));
         	writePoint3ToFile(pointList, String.format("point_%d.txt", num));
         	
         	ScannerActivity.viewMode = ScannerActivity.VIEW_MODE_RGBA;
@@ -232,7 +224,7 @@ public class ImageProcess {
     	int cols = mat.cols()/2;
     	int nStart = -1, nEnd = cols;
         int start, end;
-        for(int i = 0; i < mat.rows(); i+=10) {
+        for(int i = 0; i < mat.rows(); i+=5) {
         	start = nStart;
         	end = nEnd;
         	while(++start < cols && !isTarget(mat.get(i, start)));
@@ -243,11 +235,11 @@ public class ImageProcess {
         		nEnd = Math.min(end + 10, cols);
         	} else {
         		nStart = -1;
-        		nEnd = mat.cols();
+        		nEnd = cols;
         		continue;
         	}
         	
-//        	Log.d("range", String.format("nStart = %d, nEnd = %d", nStart, nEnd));
+        	Log.d("range", String.format("nStart = %d, nEnd = %d", nStart, nEnd));
         	
         	while(end > start) {
         		p = mRgba.get(i, start);
@@ -298,7 +290,11 @@ public class ImageProcess {
 				+ "/capstone/" + filename);
     	
 		try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+			if(!file.exists()){
+				file.createNewFile();
+			}
+			
+			BufferedWriter writer = new BufferedWriter(new FileWriter(file, true));
 			for(Point point : points)
 				writer.write(String.format("%3d %3d\n", (int) point.x, (int) point.y));
 			writer.flush();
@@ -314,9 +310,13 @@ public class ImageProcess {
 				+ "/capstone/" + filename);
     	
 		try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+			if(!file.exists()){
+				file.createNewFile();
+			}
+			
+			BufferedWriter writer = new BufferedWriter(new FileWriter(file, true));
 			for(Point3 point : points)
-				writer.write(String.format("%3d %3d %3d\n", (int) point.x, (int) point.y, (int) point.z));
+				writer.write(String.format("%.3f %.3f %.3f\n", point.x, point.y, point.z));
 			writer.flush();
 			writer.close();
 		} catch (IOException e) {
