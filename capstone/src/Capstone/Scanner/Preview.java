@@ -24,11 +24,11 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback {
 	private SurfaceHolder holder = null;
 	private Camera mCamera = null;
 
-    private int                 mFrameWidth;
-    private int                 mFrameHeight;
+	private int mFrameWidth;
+	private int mFrameHeight;
 
-    private int num;
-    
+	private int num;
+
 	public Preview(Context context) {
 		super(context);
 		Log.i("TAG", "PreView()");
@@ -36,65 +36,67 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback {
 		holder = this.getHolder();
 		holder.addCallback(this);
 		holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-		
+
 		num = 0;
 	}
 
-    public int getFrameWidth() {
-        return mFrameWidth;
-    }
+	public int getFrameWidth() {
+		return mFrameWidth;
+	}
 
-    public int getFrameHeight() {
-        return mFrameHeight;
-    }
-	
-    public Camera getCamera() {
-    	return mCamera;
-    }
-	
+	public int getFrameHeight() {
+		return mFrameHeight;
+	}
+
+	public Camera getCamera() {
+		return mCamera;
+	}
+
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
 		Log.i("TAG", "surfaceChanged");
 		// TODO Auto-generated method stub
 		Camera.Parameters parameters = mCamera.getParameters();
 		parameters.setFocusMode(Parameters.FOCUS_MODE_MACRO);
+		parameters.setExposureCompensation(parameters
+				.getMaxExposureCompensation());
 		parameters.setPictureFormat(PixelFormat.JPEG);
-		
-//		Log.i("format", parameters.getSupportedPictureFormats().toString());
-//		Camera.Size picSize = parameters.getSupportedPictureSizes().get(0);
-//		parameters.setPictureSize(picSize.width, picSize.height);
-		
+
+		// Log.i("format", parameters.getSupportedPictureFormats().toString());
+		// Camera.Size picSize = parameters.getSupportedPictureSizes().get(0);
+		// parameters.setPictureSize(picSize.width, picSize.height);
+
 		mCamera.setParameters(parameters);
-		
+
 		List<Camera.Size> sizes = parameters.getSupportedPictureSizes();
-        mFrameWidth = width;
-        mFrameHeight = height;
+		mFrameWidth = width;
+		mFrameHeight = height;
 
-        // selecting optimal camera preview size
-        {
-            double minDiff = Double.MAX_VALUE;
-            for (Camera.Size size : sizes) {
-                if (Math.abs(size.height - height) < minDiff) {
-                    mFrameWidth = size.width;
-                    mFrameHeight = size.height;
-                    Log.d("Size", "width = " + Integer.toString(mFrameWidth) + "height = " + Integer.toString(mFrameHeight));
-                    minDiff = Math.abs(size.height - height);
-                }
-            }
-        }
+		// selecting optimal camera preview size
+		{
+			double minDiff = Double.MAX_VALUE;
+			for (Camera.Size size : sizes) {
+				if (Math.abs(size.height - height) < minDiff) {
+					mFrameWidth = size.width;
+					mFrameHeight = size.height;
+					Log.d("Size", "width = " + Integer.toString(mFrameWidth)
+							+ "height = " + Integer.toString(mFrameHeight));
+					minDiff = Math.abs(size.height - height);
+				}
+			}
+		}
 
-        parameters.setPreviewSize(getFrameWidth(), getFrameHeight());
-        mCamera.setParameters(parameters);
-		
+		parameters.setPreviewSize(getFrameWidth(), getFrameHeight());
+		mCamera.setParameters(parameters);
+
 		mCamera.startPreview();
 	}
 
 	public void surfaceCreated(SurfaceHolder holder) {
 		Log.i("TAG", "surfaceCreated");
 		// TODO Auto-generated method stub
-		if(mCamera == null) {
+		if (mCamera == null) {
 			mCamera = Camera.open(2);
-			
 			try {
 				mCamera.setPreviewDisplay(holder);
 			} catch (IOException e) {
@@ -107,13 +109,12 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback {
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		Log.i("TAG", "surfaceDestroyed");
 		// TODO Auto-generated method stub
-		if(mCamera != null) {
+		if (mCamera != null) {
 			mCamera.stopPreview();
 			mCamera.setPreviewCallback(null);
 			mCamera.release();
 			mCamera = null;
-//			num = 0;
+			// num = 0;
 		}
 	}
 }
-

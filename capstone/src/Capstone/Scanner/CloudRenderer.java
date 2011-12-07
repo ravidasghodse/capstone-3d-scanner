@@ -19,7 +19,7 @@ public class CloudRenderer extends AbstractRenderer
     private FloatBuffer mFVertexBuffer;
     private IntBuffer quaterBuffer;
     
-    private int one = 1;
+    private int one = 0x10000;
 	private int[] quater = new int[] {
 		one,one,-one,  
         -one,one,-one,  
