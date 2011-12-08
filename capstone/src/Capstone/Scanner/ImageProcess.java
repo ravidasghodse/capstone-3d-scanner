@@ -85,15 +85,20 @@ public class ImageProcess {
 		// }
 		// }
 
-		ArrayList<Point> lhsSpotList = findSpots(mRgba);
+		ArrayList<Point> lhsSpotList = findSpots(mRgba, 0);
+		ArrayList<Point> estSpotList = findSpots(mRgba, 960);
 		Log.d("findspot", String.format("Found %d spots", lhsSpotList.size()));
 		writePointToFile(lhsSpotList, String.format("lhspoint_%d.txt", num));
+		writePointToFile(estSpotList, String.format("estpoint_%d.txt", num));
 
 		Point rhsSpot;
 		Point3 point;
 		ArrayList<Point> rhsSpotList = new ArrayList<Point>();
 		ArrayList<Point3> pointList = new ArrayList<Point3>();
+		ArrayList<Point3> pointList2 = new ArrayList<Point3>();
 
+		Log.d("dir", "************************************");
+		
 		for (Point lhsSpot : lhsSpotList) {
 			rhsSpot = findCorrespondSpots(lhsSpot);
 
@@ -101,17 +106,22 @@ public class ImageProcess {
 			// continue;
 
 			rhsSpotList.add(rhsSpot);
-			//
-			// // point = Calculation.triangulation(lhsSpot, rhsSpot);
-			// point = Calculation.triangulation(rhsSpot);
-			// pointList.add(point);
-			//
-			// PointCloud.addPoint(point);
+			
+			// point = Calculation.triangulation(lhsSpot, rhsSpot);
+//			point = Calculation.triangulation(rhsSpot);
+//			pointList.add(point);
+			rhsSpot.x *= 2;
+			rhsSpot.y *= 2;
+			point = Calculation.triangulation2(rhsSpot);
+			if (point.z > 0)
+				pointList2.add(point);
+			
+			//PointCloud.addPoint(point);
 		}
 		//
 		writePointToFile(rhsSpotList, String.format("rhspoint_%d.txt", num));
-		// // writePoint3ToFile(pointList, String.format("point_%d.txt",
-		// num));
+		writePoint3ToFile(pointList, String.format("point_%d.txt", num));
+		writePoint3ToFile(pointList2, String.format("pointnew_%d.txt", num));
 		// }
 		num++;
 		ScannerActivity.viewMode = ScannerActivity.VIEW_MODE_RGBA;
@@ -121,7 +131,7 @@ public class ImageProcess {
 		return ((int) p[1] == 255 && (int) p[2] == 255);
 	}
 
-	private ArrayList<Point> findSpots(Mat mat) {
+	private ArrayList<Point> findSpots(Mat mat, int edge) {
 		mGray = new Mat();
 		mRes = new Mat();
 		Imgproc.cvtColor(mat, mGray, Imgproc.COLOR_RGB2GRAY, 1);
@@ -133,14 +143,14 @@ public class ImageProcess {
 
 		double[] p;
 		int cols = mat.cols() / 2;
-		final int xMin = 0 /* cols/8 */, xMax = cols - xMin;
+		final int xMin = edge /* cols/8 */, xMax = cols + xMin;
 		final int yMin = 0 /* mat.rows()/8 */, yMax = mat.rows() - yMin;
 
 		int nStart = xMin - 1, nEnd = xMax;
 		int start, end;
 
 		for (int i = 0; i < yMax; i += 5)
-			for (int j = 0; j < xMax; j++)
+			for (int j = xMin; j < xMax; j++)
 				if (mRes.get(i, j)[0] == 255) {
 					spots.add(new Point(j, i));
 					break;
@@ -227,7 +237,7 @@ public class ImageProcess {
 			x = i + mRes.cols() / 2;
 			y = (int) (line[1] * x + line[0] / 2);
 			if (mRes.get(y, x)[0] == 255) {
-				rhsSpot.x = x;
+				rhsSpot.x = i;
 				rhsSpot.y = y;
 				break;
 			}
@@ -260,6 +270,7 @@ public class ImageProcess {
 	}
 
 	public void writePoint3ToFile(ArrayList<Point3> points, String filename) {
+		Log.d("out", "lalala");
 		File file = new File(
 				android.os.Environment.getExternalStorageDirectory()
 						+ "/capstone/" + filename);
@@ -270,7 +281,7 @@ public class ImageProcess {
 			}
 
 			BufferedWriter writer = new BufferedWriter(new FileWriter(file,
-					true));
+					false));
 			for (Point3 point : points)
 				writer.write(String.format("%.3f %.3f %.3f\n", point.x,
 						point.y, point.z));

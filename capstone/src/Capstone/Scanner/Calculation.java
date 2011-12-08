@@ -3,6 +3,8 @@ package Capstone.Scanner;
 import org.opencv.core.Point;
 import org.opencv.core.Point3;
 
+import android.util.Log;
+
 public class Calculation {
 	final static double Par         = 1000;
 	final static double Kc_L[]      = {0.13297, -0.49581, 0.00288, 0.00006, 0};
@@ -31,6 +33,9 @@ public class Calculation {
 	
 	static double LINE_LR[][]   = {{0, 0, 0}, 
                                   {0, 0, 0}};
+	
+	static double LINE_LL[][]   = {{0, 0, 1}, 
+								   {0, 0, 1}};
 
 	private static void adjust(double XY[], double Kc[], double KK[][])
 	{
@@ -77,7 +82,11 @@ public class Calculation {
 		product(invKK_L, XY_L, LINE_L[0]);
 	
 		adjust(LINE_L[0], Kc_L, KK_L);
-
+		
+		LINE_LL[0][0] = LINE_L[0][0];
+		LINE_LL[0][1] = LINE_L[0][1];
+		LINE_LL[0][2] = 1;
+		
 		direction(LINE_L, KK_L);
 		
 		product(R, LINE_L[0], LINE_LR[0]);
@@ -113,6 +122,39 @@ public class Calculation {
 //		
 //		return rSpot;
 //	}
+	
+	public static Point3 triangulation2(Point right){
+		Point3 point = new Point3();
+		double XY_R[] = {right.x, right.y, 1};
+		
+		double LINE_R[][]   = {{0, 0, 0}, 
+            				   {0, 0, 0}};
+		double a, b;
+		
+		product(invKK_R, XY_R, LINE_R[0]);
+		
+		adjust(LINE_R[0], Kc_R, KK_R);
+		
+		Log.d("dir", String.format("alpha-beta: %f", LINE_LL[0][0] - LINE_R[0][0]));
+		
+//		a = Math.PI/2 - Math.atan(LINE_LL[0][0]);
+//		b = Math.PI/2 - Math.atan(LINE_R[0][0]);
+//		
+//		point.z = Math.sin(a)*Math.sin(-b)/Math.sin(a-b)*T[0];
+		
+		point.z = (-T[0])/(LINE_LL[0][0]-LINE_R[0][0]);
+		
+//		Log.d("angle", String.format("alpha: %f beta: %f", a, b));
+		
+		point.x = LINE_R[0][0]*point.z;
+		point.y = LINE_R[0][1]*point.z;
+		
+//		direction(LINE_R, KK_R);
+		
+		
+		
+		return point;
+	}
 	
 	public static Point3 triangulation(Point right) {
 //		float point[] = new float[3];
