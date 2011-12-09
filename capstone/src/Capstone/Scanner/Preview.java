@@ -1,22 +1,13 @@
 package Capstone.Scanner;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
-import android.hardware.Camera.PreviewCallback;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -27,8 +18,6 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback {
 	private int mFrameWidth;
 	private int mFrameHeight;
 
-	private int num;
-
 	public Preview(Context context) {
 		super(context);
 		Log.i("TAG", "PreView()");
@@ -36,8 +25,6 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback {
 		holder = this.getHolder();
 		holder.addCallback(this);
 		holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-
-		num = 0;
 	}
 
 	public int getFrameWidth() {

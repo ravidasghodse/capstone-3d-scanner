@@ -10,15 +10,15 @@ public class TouchView extends GLSurfaceView {
 	private float initialY;
 	private float offsetX;
 	private float offsetY;
-	
+
 	public TouchView(Context context) {
 		super(context);
 	}
-	
+
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		int action = event.getAction();
-		switch(action) {
+		switch (action) {
 		case MotionEvent.ACTION_DOWN:
 			Log.i("touch", "DOWN");
 			// Need to remember where the initial starting point
@@ -35,6 +35,6 @@ public class TouchView extends GLSurfaceView {
 			PointCloud.ylook = initialY + event.getY() - offsetY;
 			break;
 		}
-		return(true);
+		return (true);
 	}
 }

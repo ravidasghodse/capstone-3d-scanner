@@ -56,10 +56,10 @@ public class ImageProcess {
 				mRgba.cols(), mRgba.rows(), mRgba.channels()));
 
 		ArrayList<Point> lhsSpotList = findSpots(mRgba, 0);
-//		ArrayList<Point> estSpotList = findSpots(mRgba, 960);
+		// ArrayList<Point> estSpotList = findSpots(mRgba, 960);
 		Log.d("findspot", String.format("Found %d spots", lhsSpotList.size()));
 		writePointToFile(lhsSpotList, String.format("lhspoint_%d.txt", num));
-//		writePointToFile(estSpotList, String.format("estpoint_%d.txt", num));
+		// writePointToFile(estSpotList, String.format("estpoint_%d.txt", num));
 
 		Point rhsSpot;
 		Point3 point;
@@ -68,7 +68,7 @@ public class ImageProcess {
 		ArrayList<Point3> pointList2 = new ArrayList<Point3>();
 
 		Log.d("dir", "************************************");
-		
+
 		for (Point lhsSpot : lhsSpotList) {
 			rhsSpot = findCorrespondSpots(lhsSpot);
 
@@ -76,17 +76,17 @@ public class ImageProcess {
 			// continue;
 
 			rhsSpotList.add(rhsSpot);
-			
+
 			// point = Calculation.triangulation(lhsSpot, rhsSpot);
-//			point = Calculation.triangulation(rhsSpot);
-//			pointList.add(point);
+			// point = Calculation.triangulation(rhsSpot);
+			// pointList.add(point);
 			rhsSpot.x *= 2;
 			rhsSpot.y *= 2;
 			point = Calculation.triangulation(rhsSpot);
 			if (point != null)
 				pointList2.add(point);
-			
-//			PointCloud.addPoint(point);
+
+			// PointCloud.addPoint(point);
 		}
 		writePointToFile(rhsSpotList, String.format("rhspoint_%d.txt", num));
 		writePoint3ToFile(pointList, String.format("point_%d.txt", num));
@@ -95,9 +95,9 @@ public class ImageProcess {
 		ScannerActivity.viewMode = ScannerActivity.VIEW_MODE_RGBA;
 	}
 
-	private Boolean isTarget(double[] p) {
-		return ((int) p[1] == 255 && (int) p[2] == 255);
-	}
+//	private Boolean isTarget(double[] p) {
+//		return ((int) p[1] == 255 && (int) p[2] == 255);
+//	}
 
 	private ArrayList<Point> findSpots(Mat mat, int edge) {
 		mGray = new Mat();
@@ -109,13 +109,13 @@ public class ImageProcess {
 		// Imgproc.findContours(image, contours, hierarchy, mode, method)
 		ArrayList<Point> spots = new ArrayList<Point>();
 
-		double[] p;
+//		double[] p;
 		int cols = mat.cols() / 2;
 		final int xMin = edge /* cols/8 */, xMax = cols + xMin;
 		final int yMin = 0 /* mat.rows()/8 */, yMax = mat.rows() - yMin;
 
-		int nStart = xMin - 1, nEnd = xMax;
-		int start, end;
+//		int nStart = xMin - 1, nEnd = xMax;
+//		int start, end;
 
 		for (int i = 0; i < yMax; i += 5)
 			for (int j = xMin; j < xMax; j++)
@@ -124,36 +124,36 @@ public class ImageProcess {
 					break;
 				}
 
-//		for (int i = yMin; i < yMax; i += 5) {
-//			start = nStart;
-//			end = nEnd;
-//			while (++start < xMax && !isTarget(mat.get(i, start)))
-//				;
-//			while (--end > xMin - 1 && end > start
-//					&& !isTarget(mat.get(i, end)))
-//				;
-//
-//			if (end > start) {
-//				nStart = Math.max(start - 10, xMin);
-//				nEnd = Math.min(end + 10, xMax);
-//			} else {
-//				nStart = xMin - 1;
-//				nEnd = xMax;
-//				continue;
-//			}
-//
-//			Log.d("range",
-//					String.format("nStart = %d, nEnd = %d", nStart, nEnd));
-//
-//			while (end > start) {
-//				p = mRgba.get(i, start);
-//				if (isTarget(p)) {
-//					spots.add(new Point(start, i));
-//					break;
-//				}
-//				start++;
-//			}
-//		}
+		// for (int i = yMin; i < yMax; i += 5) {
+		// start = nStart;
+		// end = nEnd;
+		// while (++start < xMax && !isTarget(mat.get(i, start)))
+		// ;
+		// while (--end > xMin - 1 && end > start
+		// && !isTarget(mat.get(i, end)))
+		// ;
+		//
+		// if (end > start) {
+		// nStart = Math.max(start - 10, xMin);
+		// nEnd = Math.min(end + 10, xMax);
+		// } else {
+		// nStart = xMin - 1;
+		// nEnd = xMax;
+		// continue;
+		// }
+		//
+		// Log.d("range",
+		// String.format("nStart = %d, nEnd = %d", nStart, nEnd));
+		//
+		// while (end > start) {
+		// p = mRgba.get(i, start);
+		// if (isTarget(p)) {
+		// spots.add(new Point(start, i));
+		// break;
+		// }
+		// start++;
+		// }
+		// }
 
 		return spots;
 	}

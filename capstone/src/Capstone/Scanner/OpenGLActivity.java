@@ -21,7 +21,7 @@ public class OpenGLActivity extends Activity {
 		super.onCreate(savedInstanceState);
 
 		PointCloud.readModel("newpoint_1.txt");
-		
+
 		PointCloud.xlook = 0;
 		PointCloud.ylook = 0;
 		mTestHarness = new TouchView(this);
@@ -60,7 +60,7 @@ public class OpenGLActivity extends Activity {
 			intent = new Intent(OpenGLActivity.this, ScannerActivity.class);
 			startActivity(intent);
 		} else if (item == mItemExit) {
-			//TODO
+			// TODO
 		} else if (item == mItemSave) {
 			PointCloud.saveModel("model.txt");
 		}
