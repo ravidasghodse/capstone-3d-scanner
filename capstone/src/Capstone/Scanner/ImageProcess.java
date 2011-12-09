@@ -83,13 +83,14 @@ public class ImageProcess {
 			rhsSpot.x *= 2;
 			rhsSpot.y *= 2;
 			point = Calculation.triangulation(rhsSpot);
-			if (point != null)
+			if (point != null) {
 				pointList2.add(point);
-
+				PointCloud.addPoint(point);
+			}
 			// PointCloud.addPoint(point);
 		}
 		writePointToFile(rhsSpotList, String.format("rhspoint_%d.txt", num));
-		writePoint3ToFile(pointList, String.format("point_%d.txt", num));
+//		writePoint3ToFile(pointList, String.format("point_%d.txt", num));
 		writePoint3ToFile(pointList2, String.format("pointnew_%d.txt", num));
 		num++;
 		ScannerActivity.viewMode = ScannerActivity.VIEW_MODE_RGBA;

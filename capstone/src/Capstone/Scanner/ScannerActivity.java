@@ -63,13 +63,14 @@ public class ScannerActivity extends Activity {
 				currentTime = 0;
 			}
 
-			timerUpdateHandler.postDelayed(timerUpdateTask, 1000);
+			timerUpdateHandler.postDelayed(timerUpdateTask, 900);
 			// countdownTextView.setText("" + currentTime);
 		}
 	};
 
 	public ScannerActivity() {
 		num = 0;
+		PointCloud.vertices = new float[6000];
 		Log.i(TAG, "Instantiated new " + this.getClass());
 	}
 
@@ -82,7 +83,6 @@ public class ScannerActivity extends Activity {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-		PointCloud.vertices = new float[1000];
 		timerUpdateHandler = new Handler();
 		imageProcess = new ImageProcess();
 		preview = new Preview(this);

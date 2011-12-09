@@ -20,7 +20,7 @@ public class OpenGLActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		PointCloud.readModel("newpoint_1.txt");
+//		PointCloud.readModel("newpoint_1.txt");
 
 		PointCloud.xlook = 0;
 		PointCloud.ylook = 0;
