@@ -123,13 +123,14 @@ public class Calculation {
 //		return rSpot;
 //	}
 	
-	public static Point3 triangulation2(Point right){
+	public static Point3 triangulation(Point right){
+		if (right.x==0 && right.y==0) return null;
+			
 		Point3 point = new Point3();
 		double XY_R[] = {right.x, right.y, 1};
 		
 		double LINE_R[][]   = {{0, 0, 0}, 
             				   {0, 0, 0}};
-		double a, b;
 		
 		product(invKK_R, XY_R, LINE_R[0]);
 		
@@ -141,8 +142,10 @@ public class Calculation {
 //		b = Math.PI/2 - Math.atan(LINE_R[0][0]);
 //		
 //		point.z = Math.sin(a)*Math.sin(-b)/Math.sin(a-b)*T[0];
-		
-		point.z = (-T[0])/(LINE_LL[0][0]-LINE_R[0][0]);
+		if(LINE_LL[0][0]-LINE_R[0][0] > 0 && LINE_LL[0][0]-LINE_R[0][0] > 0.05)
+			point.z = (-T[0])/(LINE_LL[0][0]-LINE_R[0][0]);
+		else
+			return null;
 		
 //		Log.d("angle", String.format("alpha: %f beta: %f", a, b));
 		
@@ -156,27 +159,27 @@ public class Calculation {
 		return point;
 	}
 	
-	public static Point3 triangulation(Point right) {
-//		float point[] = new float[3];
-		Point3 point = new Point3();
-		double XY_R[] = {right.x, right.y, 1};
-		
-		double LINE_R[][]   = {{0, 0, 0}, 
-            				   {0, 0, 0}};
-		
-		product(invKK_R, XY_R, LINE_R[0]);
-		
-		adjust(LINE_R[0], Kc_R, KK_R);
-		
-		direction(LINE_R, KK_R);
-		
-		point.x = ((LINE_LR[1][2]-LINE_LR[0][2])*LINE_LR[0][0]/(LINE_LR[1][0]-LINE_LR[0][0])
-					-(LINE_R[1][2]-LINE_R[0][2])*LINE_R[0][0]/(LINE_R[1][0]-LINE_R[0][0])-LINE_LR[0][2]+LINE_R[0][2])
-					/((LINE_LR[1][2]-LINE_LR[0][2])/(LINE_LR[1][0]-LINE_LR[0][0])-(LINE_R[1][2]-LINE_R[0][2])/(LINE_R[1][0]-LINE_R[0][0]));
-		
-		point.y = LINE_LR[0][1]+(LINE_LR[1][1]-LINE_LR[0][1])*(point.x-LINE_LR[0][0])/(LINE_LR[1][0]-LINE_LR[0][0]);
-		point.z = LINE_LR[0][2]+(LINE_LR[1][2]-LINE_LR[0][2])*(point.x-LINE_LR[0][0])/(LINE_LR[1][0]-LINE_LR[0][0]);
-		
-    	return point;
-    }
+//	public static Point3 triangulation(Point right) {
+////		float point[] = new float[3];
+//		Point3 point = new Point3();
+//		double XY_R[] = {right.x, right.y, 1};
+//		
+//		double LINE_R[][]   = {{0, 0, 0}, 
+//            				   {0, 0, 0}};
+//		
+//		product(invKK_R, XY_R, LINE_R[0]);
+//		
+//		adjust(LINE_R[0], Kc_R, KK_R);
+//		
+//		direction(LINE_R, KK_R);
+//		
+//		point.x = ((LINE_LR[1][2]-LINE_LR[0][2])*LINE_LR[0][0]/(LINE_LR[1][0]-LINE_LR[0][0])
+//					-(LINE_R[1][2]-LINE_R[0][2])*LINE_R[0][0]/(LINE_R[1][0]-LINE_R[0][0])-LINE_LR[0][2]+LINE_R[0][2])
+//					/((LINE_LR[1][2]-LINE_LR[0][2])/(LINE_LR[1][0]-LINE_LR[0][0])-(LINE_R[1][2]-LINE_R[0][2])/(LINE_R[1][0]-LINE_R[0][0]));
+//		
+//		point.y = LINE_LR[0][1]+(LINE_LR[1][1]-LINE_LR[0][1])*(point.x-LINE_LR[0][0])/(LINE_LR[1][0]-LINE_LR[0][0]);
+//		point.z = LINE_LR[0][2]+(LINE_LR[1][2]-LINE_LR[0][2])*(point.x-LINE_LR[0][0])/(LINE_LR[1][0]-LINE_LR[0][0]);
+//		
+//    	return point;
+//    }
 }

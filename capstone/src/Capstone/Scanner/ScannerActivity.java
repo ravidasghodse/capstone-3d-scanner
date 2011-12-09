@@ -39,8 +39,6 @@ public class ScannerActivity extends Activity {
 	private MenuItem mItemStartStop;
 	private MenuItem mItemChangeView;
 
-	Queue<Bitmap> picQueue;
-
 	Preview preview;
 	ImageProcess imageProcess;
 
@@ -82,10 +80,10 @@ public class ScannerActivity extends Activity {
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		PointCloud.vertices = new float[1000];
-		picQueue = new LinkedList<Bitmap>();
 		timerUpdateHandler = new Handler();
 		imageProcess = new ImageProcess();
 		preview = new Preview(this);
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		setContentView(preview);
 	}
 

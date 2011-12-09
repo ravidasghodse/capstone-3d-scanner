@@ -51,45 +51,15 @@ public class ImageProcess {
 	}
 
 	public void processFrame(Bitmap mBitmap) {
-		// mYuv = Utils.bitmapToMat(mBitmap);
 		mRgba = Utils.bitmapToMat(mBitmap);
-		// mYuv = new Mat();
-		// Imgproc.cvtColor(mRgba, mYuv, Imgproc.COLOR_RGB2YUV, 3);
-		// mYuv.put(0, 0, data);
-
-		// Log.d("mYuv", String.format("col: %d  row: %d channel: %d\n",
-		// mYuv.cols(), mYuv.rows(), mYuv.channels()));
 		Log.d("mRgba", String.format("col: %d  row: %d channel: %d\n",
 				mRgba.cols(), mRgba.rows(), mRgba.channels()));
 
-		// for(int k = 0; k < mYuv.channels(); k++) {
-		// File file = new
-		// File(android.os.Environment.getExternalStorageDirectory()
-		// + "/capstone/camera" + Integer.toString(num)
-		// + "_" + Integer.toString(k+1) + ".dat");
-		//
-		// try {
-		// FileWriter filewriter = new FileWriter(file);
-		// BufferedWriter fileoutData=new BufferedWriter(filewriter);
-		// for(int i = 0; i < mYuv.rows(); i+=10) {
-		// for(int j = 0; j < mYuv.cols(); j+=10) {
-		// fileoutData.write(String.format("%6.2f ", mYuv.get(i, j)[k]));
-		// }
-		// fileoutData.write("\n");
-		// }
-		// fileoutData.flush();
-		// fileoutData.close();
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		// }
-
 		ArrayList<Point> lhsSpotList = findSpots(mRgba, 0);
-		ArrayList<Point> estSpotList = findSpots(mRgba, 960);
+//		ArrayList<Point> estSpotList = findSpots(mRgba, 960);
 		Log.d("findspot", String.format("Found %d spots", lhsSpotList.size()));
 		writePointToFile(lhsSpotList, String.format("lhspoint_%d.txt", num));
-		writePointToFile(estSpotList, String.format("estpoint_%d.txt", num));
+//		writePointToFile(estSpotList, String.format("estpoint_%d.txt", num));
 
 		Point rhsSpot;
 		Point3 point;
@@ -112,17 +82,15 @@ public class ImageProcess {
 //			pointList.add(point);
 			rhsSpot.x *= 2;
 			rhsSpot.y *= 2;
-			point = Calculation.triangulation2(rhsSpot);
-			if (point.z > 0)
+			point = Calculation.triangulation(rhsSpot);
+			if (point != null)
 				pointList2.add(point);
 			
-			//PointCloud.addPoint(point);
+//			PointCloud.addPoint(point);
 		}
-		//
 		writePointToFile(rhsSpotList, String.format("rhspoint_%d.txt", num));
 		writePoint3ToFile(pointList, String.format("point_%d.txt", num));
 		writePoint3ToFile(pointList2, String.format("pointnew_%d.txt", num));
-		// }
 		num++;
 		ScannerActivity.viewMode = ScannerActivity.VIEW_MODE_RGBA;
 	}
@@ -156,41 +124,36 @@ public class ImageProcess {
 					break;
 				}
 
-		// for (int i = 0; i < yMax; i++)
-		// for (int j = 0; j < xMax; j++)
-		// if (isTarget(mat.get(i, j)))
-		// spots.add(new Point(j, i));
-
-		// for (int i = yMin; i < yMax; i += 5) {
-		// start = nStart;
-		// end = nEnd;
-		// while (++start < xMax && !isTarget(mat.get(i, start)))
-		// ;
-		// while (--end > xMin - 1 && end > start
-		// && !isTarget(mat.get(i, end)))
-		// ;
-		//
-		// if (end > start) {
-		// nStart = Math.max(start - 10, xMin);
-		// nEnd = Math.min(end + 10, xMax);
-		// } else {
-		// nStart = xMin - 1;
-		// nEnd = xMax;
-		// continue;
-		// }
-		//
-		// Log.d("range",
-		// String.format("nStart = %d, nEnd = %d", nStart, nEnd));
-		//
-		// while (end > start) {
-		// p = mRgba.get(i, start);
-		// if (isTarget(p)) {
-		// spots.add(new Point(start, i));
-		// break;
-		// }
-		// start++;
-		// }
-		// }
+//		for (int i = yMin; i < yMax; i += 5) {
+//			start = nStart;
+//			end = nEnd;
+//			while (++start < xMax && !isTarget(mat.get(i, start)))
+//				;
+//			while (--end > xMin - 1 && end > start
+//					&& !isTarget(mat.get(i, end)))
+//				;
+//
+//			if (end > start) {
+//				nStart = Math.max(start - 10, xMin);
+//				nEnd = Math.min(end + 10, xMax);
+//			} else {
+//				nStart = xMin - 1;
+//				nEnd = xMax;
+//				continue;
+//			}
+//
+//			Log.d("range",
+//					String.format("nStart = %d, nEnd = %d", nStart, nEnd));
+//
+//			while (end > start) {
+//				p = mRgba.get(i, start);
+//				if (isTarget(p)) {
+//					spots.add(new Point(start, i));
+//					break;
+//				}
+//				start++;
+//			}
+//		}
 
 		return spots;
 	}
@@ -206,30 +169,7 @@ public class ImageProcess {
 		// Log.d("line: ", String.format("b: %f k: %f", line[0], line[1]));
 
 		int x, y;
-		// ArrayList<Point> candidate = new ArrayList<Point>();
-		// for(int i = 0; i < mRgba.cols()/2; i++) {
-		// x = i + mRgba.cols()/2;
-		// y = (int) (line[1]*x + line[0]);
-		// if(isTarget(mRgba.get(y, x))) {
-		// candidate.add(new Point(x, y));
-		// }
-		// }
-		//
-		// int sumX = 0, sumY = 0;
-		//
-		// for(Point p:candidate) {
-		// sumX += p.x;
-		// sumY += p.y;
-		// }
-		// if(candidate.size() > 0) {
-		// rhsSpot.x = sumX / candidate.size();
-		// rhsSpot.y = sumY / candidate.size();
-		// }
 
-		// Mat mGray = new Mat();
-		// Mat res = new Mat();
-		// Imgproc.cvtColor(mRgba, mGray, Imgproc.COLOR_RGB2GRAY, 1);
-		// Imgproc.threshold(mGray, res, 220, 255, Imgproc.THRESH_BINARY);
 		Log.i("mRes",
 				String.format("col: %d row: %d", mRes.cols(), mRes.rows()));
 
