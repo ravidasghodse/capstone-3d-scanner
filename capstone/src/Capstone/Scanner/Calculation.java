@@ -30,10 +30,8 @@ public class Calculation {
 
 	final static double T[] = { -42.76721, -0.23691, 0.08279 };
 
-	static double LINE_LR[][] = { { 0, 0, 0 }, { 0, 0, 0 } };
-
-	static double LINE_LL[][] = { { 0, 0, 1 }, { 0, 0, 1 } };
-
+	final static double GUESS = 50;
+	
 	private static void adjust(double XY[], double Kc[], double KK[][]) {
 		double r = XY[0] * XY[0] + XY[1] * XY[1];
 		double a = 1 + Kc[0] * r + Kc[1] * r * r + Kc[4] * r * r * r;
@@ -67,6 +65,7 @@ public class Calculation {
 		double XY_L[] = { p.x, p.y, 1 };
 		double LINE_L[][] = { { 0, 0, 0 }, { 0, 0, 0 } };
 		double LINE_R[][] = { { 0, 0, 0 }, { 0, 0, 0 } };
+		double LINE_LR[][] = { { 0, 0, 0 }, { 0, 0, 0 } };
 		double LINE_P_R[][] = { { 0, 0, 1 }, { 0, 0, 0 } };
 
 		int i, j;
@@ -74,10 +73,6 @@ public class Calculation {
 		product(invKK_L, XY_L, LINE_L[0]);
 
 		adjust(LINE_L[0], Kc_L, KK_L);
-
-		LINE_LL[0][0] = LINE_L[0][0];
-		LINE_LL[0][1] = LINE_L[0][1];
-		LINE_LL[0][2] = 1;
 
 		direction(LINE_L, KK_L);
 
@@ -117,38 +112,38 @@ public class Calculation {
 	// return rSpot;
 	// }
 
-	public static Point3 triangulation(Point right) {
+	public static Point3 triangulation(Point left, Point right) {
 		if (right.x == 0 && right.y == 0)
 			return null;
 
 		Point3 point = new Point3();
+		double XY_L[] = { left.x, left.y, 1 };
 		double XY_R[] = { right.x, right.y, 1 };
+		
+		double DIR_L[] = { 0, 0, 0 };
+		double DIR_R[] = { 0, 0, 0 };
 
-		double LINE_R[][] = { { 0, 0, 0 }, { 0, 0, 0 } };
+		product(invKK_R, XY_L, DIR_L);
+		product(invKK_R, XY_R, DIR_R);
 
-		product(invKK_R, XY_R, LINE_R[0]);
+		adjust(DIR_L, Kc_R, KK_R);
+		adjust(DIR_R, Kc_R, KK_R);
+		
+//		Log.d("dir", String.format("left: x%f, y%f", DIR_L[0], DIR_L[1]));
+//		Log.d("dir", String.format("right: x%f, y%f", DIR_R[0], DIR_R[1]));
 
-		adjust(LINE_R[0], Kc_R, KK_R);
+//		Log.d("dir",
+//				String.format("alpha-beta: %f", DIR_L[0] - DIR_R[0]));
 
-		Log.d("dir",
-				String.format("alpha-beta: %f", LINE_LL[0][0] - LINE_R[0][0]));
-
-		// a = Math.PI/2 - Math.atan(LINE_LL[0][0]);
-		// b = Math.PI/2 - Math.atan(LINE_R[0][0]);
-		//
-		// point.z = Math.sin(a)*Math.sin(-b)/Math.sin(a-b)*T[0];
-		if (LINE_LL[0][0] - LINE_R[0][0] > 0
-				&& LINE_LL[0][0] - LINE_R[0][0] > 0.05)
-			point.z = (-T[0]) / (LINE_LL[0][0] - LINE_R[0][0]);
+		if (DIR_L[0] - DIR_R[0] > 0
+				&& DIR_L[0] - DIR_R[0] > 0.05)
+			point.z = T[0] / (DIR_R[0] - DIR_L[0]);
 		else
 			return null;
-
-		// Log.d("angle", String.format("alpha: %f beta: %f", a, b));
-
-		point.x = LINE_R[0][0] * point.z;
-		point.y = LINE_R[0][1] * point.z;
-
-		// direction(LINE_R, KK_R);
+		
+//		Log.d("dir", String.format("Alpha: %f", DIR_L[0]));
+		point.x = DIR_R[0] * point.z;
+		point.y = DIR_R[1] * point.z;
 
 		return point;
 	}
@@ -179,4 +174,79 @@ public class Calculation {
 	//
 	// return point;
 	// }
+	
+	final static int SLOT = 960/30;
+	
+	public static int[] bucket = new int[SLOT];
+	public static double lower, upper;
+	
+	public static void interpolation(Point[] spotList){
+		int i;
+		
+		int count = 0;
+		for (i=0; i<SLOT ;++i)
+			bucket[i] = 0;
+		for (i=0; i<108 ;++i){
+			if (spotList[i].x == -1) continue;
+			bucket[(int)(spotList[i].x/(960/SLOT))]++;
+			count++;
+		}
+		
+		for (i = 0;i<SLOT && bucket[i]<=Math.ceil(count/SLOT) ;++i);
+		lower = (960/SLOT)*(i>0?i-1:0);
+		for (i = SLOT-1;i>=0 && bucket[i]<=Math.ceil(count/SLOT) ;--i);
+		upper = (960/SLOT)*(i<SLOT-1?i+2:SLOT);
+		
+		Log.d("interpola", String.format("lower: %f upper:%f", lower, upper));
+		
+		int lastIndex = -1, thisIndex = 0, lastMid = -1, thisMid = 0;
+		for (thisIndex = 0; thisIndex < 108; ++thisIndex){
+			if (isBad(spotList[thisIndex])){
+				spotList[thisIndex].x = -1;
+				spotList[thisIndex].y = -1;
+				if (lastMid != -1){
+					thisMid = (thisIndex+lastIndex)/2;
+					refine(spotList, lastMid, thisMid);
+					lastMid = -1;
+					lastIndex = -1;
+				}
+				continue;
+			}
+			if (lastIndex == -1){
+				lastIndex = thisIndex;
+				continue;
+			}
+			if (spotList[thisIndex].x == spotList[lastIndex].x)
+				continue;
+			if (lastMid == -1){
+				lastMid = (thisIndex+lastIndex)/2;
+				lastIndex = thisIndex;
+				continue;
+			}
+			thisMid = (thisIndex+lastIndex)/2;
+			refine(spotList, lastMid, thisMid);
+			lastIndex = thisIndex;
+			lastMid = thisMid;
+		}
+		
+		if (lastMid != -1){
+			thisMid = (108+lastIndex)/2;
+			refine(spotList, lastMid, thisMid);
+		}
+		
+		for (i = 0; i < 108; ++i)
+			Log.d("inter", String.format("x: %f, y: %f", spotList[i].x, spotList[i].y));
+		
+	}
+	
+	private static boolean isBad(Point p){
+		return p.y == -1 || p.x<lower || p.x>upper;
+	}
+	
+	private static void refine(Point[] spotList, int lastMid, int thisMid){
+		for (int i = lastMid; i < thisMid; ++i){
+			spotList[i].x = spotList[lastMid].x + (spotList[thisMid].x - spotList[lastMid].x)
+								/(spotList[thisMid].y - spotList[lastMid].y)*(spotList[i].y - spotList[lastMid].y);
+		}
+	}
 }

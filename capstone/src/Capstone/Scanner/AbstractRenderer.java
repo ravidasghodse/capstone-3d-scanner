@@ -27,7 +27,7 @@ public abstract class AbstractRenderer implements Renderer
         gl.glLoadIdentity();
         
         //Regular frustum
-        gl.glFrustumf(-ratio, ratio, -1, 1, 2, 500);
+        gl.glFrustumf(-ratio, ratio, -1, 1, 2, 1000);
         //gl.glOrthof(-100, 100, -150, 150, 10, 300);
         //4 times bigger
         //gl.glFrustumf(-ratio * 4, ratio * 4, -1 * 4, 1 * 4, 3, 7);
@@ -40,7 +40,7 @@ public abstract class AbstractRenderer implements Renderer
         gl.glMatrixMode(GL10.GL_MODELVIEW);
         gl.glLoadIdentity();
 //        GLU.gluLookAt(gl, 0, 0, 200, 0f, 0f, 1000f, 0f, 1.0f, 0.0f);
-        GLU.gluLookAt(gl, PointCloud.xDist, PointCloud.yDist, -300 + PointCloud.zoomDist,
+        GLU.gluLookAt(gl, PointCloud.xDist, PointCloud.yDist, -PointCloud.oriCameraDist + PointCloud.zoomDist,
         		PointCloud.xDist, PointCloud.yDist, 0f, 0f, 1.0f, 0.0f);
         gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
         draw(gl);

@@ -32,27 +32,19 @@ import android.widget.Toast;
 public class ScannerActivity extends Activity {
 	private static final String TAG = "Sample::Activity";
 
-	public static final int VIEW_MODE_RGBA = 0;
-	public static final int VIEW_MODE_START = 1;
-	public static final int VIEW_MODE_STOP = 2;
-	public static final int VIEW_MODE_OPENGL = 6;
-
 	private static final int DIALOG_PAUSED_ID = 0;
 
-	private MenuItem mItemPreviewRGBA;
-	private MenuItem mItemChangeView;
+	private MenuItem mItemModelPreview;
+	private MenuItem mItemExit;
+	
+	private Preview preview;
+	private ImageProcess imageProcess;
 
-	Preview preview;
-	ImageProcess imageProcess;
-
-	int num;
-
+	private int num;
 	Handler timerUpdateHandler;
 	boolean timelapseRunning = false;
 	int currentTime = 0;
 	final int MSECS_BETWEEN_PHOTOS = 1;
-
-	public static int viewMode = VIEW_MODE_RGBA;
 
 	private Runnable timerUpdateTask = new Runnable() {
 		public void run() {
@@ -64,13 +56,16 @@ public class ScannerActivity extends Activity {
 			}
 
 			timerUpdateHandler.postDelayed(timerUpdateTask, 900);
-			// countdownTextView.setText("" + currentTime);
 		}
 	};
 
 	public ScannerActivity() {
 		num = 0;
-		PointCloud.vertices = new float[6000];
+		PointCloud.curLine = 0;
+		
+		timerUpdateHandler = new Handler();
+		imageProcess = new ImageProcess();
+		
 		Log.i(TAG, "Instantiated new " + this.getClass());
 	}
 
@@ -83,8 +78,6 @@ public class ScannerActivity extends Activity {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-		timerUpdateHandler = new Handler();
-		imageProcess = new ImageProcess();
 		preview = new Preview(this);
 		preview.setClickable(true);
 		preview.setOnClickListener(onClick);
@@ -104,32 +97,32 @@ public class ScannerActivity extends Activity {
 				timelapseRunning = true;
 				timerUpdateHandler.post(timerUpdateTask);
 			} else {
-//				showDialog(DIALOG_PAUSED_ID);
-				 timelapseRunning = false;
-				 timerUpdateHandler.removeCallbacks(timerUpdateTask);
+				// showDialog(DIALOG_PAUSED_ID);
+				Toast.makeText(getApplicationContext(), "Stop scanning",
+						Toast.LENGTH_SHORT).show();
+				timelapseRunning = false;
+				timerUpdateHandler.removeCallbacks(timerUpdateTask);
 			}
 		}
 	};
 
 	public boolean onCreateOptionsMenu(Menu menu) {
 		Log.i(TAG, "onCreateOptionsMenu");
-		mItemPreviewRGBA = menu.add("Preview RGBA");
-		mItemChangeView = menu.add("Change view");
+		mItemModelPreview = menu.add("Model Preview");
 		return true;
 	}
 
 	public boolean onOptionsItemSelected(MenuItem item) {
 		Log.i(TAG, "Menu Item selected " + item);
-		if (item == mItemPreviewRGBA)
-			viewMode = VIEW_MODE_RGBA;
-		else if (item == mItemChangeView) {
+
+		if (item == mItemModelPreview) {
 			Intent intent;
-			if (viewMode == VIEW_MODE_RGBA) {
-				intent = new Intent(ScannerActivity.this, OpenGLActivity.class);
-				startActivity(intent);
-				item.setTitle("Back");
-			}
+			intent = new Intent(ScannerActivity.this, OpenGLActivity.class);
+			startActivity(intent);
+		} else if (item == mItemExit) {
+			finish();
 		}
+		
 		return true;
 	}
 
@@ -149,8 +142,7 @@ public class ScannerActivity extends Activity {
 					mBitmap.getWidth(), mBitmap.getHeight()));
 
 			// picQueue.add(mBitmap);
-			// savePicture(mBitmap, String.format("/capstone/camera%d.jpg",
-			// num));
+			savePicture(mBitmap, String.format("/capstone/camera%d.jpg", num));
 			// saveData(mBitmap, String.format("/capstone/camera%d.dat", num));
 			num++;
 			imageProcess.processFrame(mBitmap);

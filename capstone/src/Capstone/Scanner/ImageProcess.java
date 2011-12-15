@@ -7,7 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
@@ -55,52 +54,77 @@ public class ImageProcess {
 		Log.d("mRgba", String.format("col: %d  row: %d channel: %d\n",
 				mRgba.cols(), mRgba.rows(), mRgba.channels()));
 
-		ArrayList<Point> lhsSpotList = findSpots(mRgba, 0);
+		
+		Point lhsSpotList[] = findSpots(mRgba, 0);
 		// ArrayList<Point> estSpotList = findSpots(mRgba, 960);
-		Log.d("findspot", String.format("Found %d spots", lhsSpotList.size()));
-		writePointToFile(lhsSpotList, String.format("lhspoint_%d.txt", num));
+//		Log.d("findspot", String.format("Found %d spots", lhsSpotList.size()));
 		// writePointToFile(estSpotList, String.format("estpoint_%d.txt", num));
+		
+		Log.d("interpola", "left");
+		writePointToFile(lhsSpotList, String.format("lhspoint_%d.txt", num));
+		Calculation.interpolation(lhsSpotList);
+		writePointToFile(lhsSpotList, String.format("lhspointnew_%d.txt", num));
 
 		Point rhsSpot;
 		Point3 point;
-		ArrayList<Point> rhsSpotList = new ArrayList<Point>();
-		ArrayList<Point3> pointList = new ArrayList<Point3>();
-		ArrayList<Point3> pointList2 = new ArrayList<Point3>();
+		Point rhsSpotList[] = new Point[108];
+//		Point3 pointList[] = new Point3[108];
+		Point3 pointList2[] = new Point3[108];
 
-		Log.d("dir", "************************************");
-
-		for (Point lhsSpot : lhsSpotList) {
-			rhsSpot = findCorrespondSpots(lhsSpot);
+		for (int i = 0;i < 108; ++i) {
+			rhsSpotList[i] = new Point();
+			if (lhsSpotList[i].x != -1){
+				rhsSpot = findCorrespondSpots(lhsSpotList[i]);
+			}
+			else {
+				rhsSpot = new Point();
+				rhsSpot.x = -1;
+				rhsSpot.y = -1;
+			}
 
 			// if (rhsSpot.x == 0 && rhsSpot.y == 0)
 			// continue;
-
-			rhsSpotList.add(rhsSpot);
-
+			rhsSpotList[i].x = rhsSpot.x;
+			rhsSpotList[i].y = rhsSpot.y;
+		}
+		
+		Log.d("interpola", "right");
+		Calculation.interpolation(rhsSpotList);
+		
+		for (int i = 0;i < 108; ++i) {
+			point = null;
+			if (rhsSpotList[i].x != -1)	{
 			// point = Calculation.triangulation(lhsSpot, rhsSpot);
 			// point = Calculation.triangulation(rhsSpot);
 			// pointList.add(point);
-			rhsSpot.x *= 2;
-			rhsSpot.y *= 2;
-			point = Calculation.triangulation(rhsSpot);
-			if (point != null) {
-				pointList2.add(point);
-				PointCloud.addPoint(point);
+				rhsSpotList[i].x *= 2;
+				rhsSpotList[i].y *= 2;
+				point = Calculation.triangulation(lhsSpotList[i], rhsSpotList[i]);
 			}
+			if (point == null) {
+				point = new Point3();
+				point.x = -1;
+				point.y = -1;
+				point.z = -1;
+			}
+			pointList2[i] = new Point3();
+			pointList2[i].x = point.x;
+			pointList2[i].y = point.y;
+			pointList2[i].z = point.z;
+			PointCloud.addPoint(point, i);
 			// PointCloud.addPoint(point);
 		}
 		writePointToFile(rhsSpotList, String.format("rhspoint_%d.txt", num));
 //		writePoint3ToFile(pointList, String.format("point_%d.txt", num));
 		writePoint3ToFile(pointList2, String.format("pointnew_%d.txt", num));
 		num++;
-		ScannerActivity.viewMode = ScannerActivity.VIEW_MODE_RGBA;
 	}
 
 //	private Boolean isTarget(double[] p) {
 //		return ((int) p[1] == 255 && (int) p[2] == 255);
 //	}
 
-	private ArrayList<Point> findSpots(Mat mat, int edge) {
+	private Point[] findSpots(Mat mat, int edge) {
 		mGray = new Mat();
 		mRes = new Mat();
 		Imgproc.cvtColor(mat, mGray, Imgproc.COLOR_RGB2GRAY, 1);
@@ -108,7 +132,7 @@ public class ImageProcess {
 				String.format("col: %d row: %d", mGray.cols(), mGray.rows()));
 		Imgproc.threshold(mGray, mRes, 220, 255, Imgproc.THRESH_BINARY);
 		// Imgproc.findContours(image, contours, hierarchy, mode, method)
-		ArrayList<Point> spots = new ArrayList<Point>();
+		Point spots[] = new Point[108];
 
 //		double[] p;
 		int cols = mat.cols() / 2;
@@ -118,12 +142,18 @@ public class ImageProcess {
 //		int nStart = xMin - 1, nEnd = xMax;
 //		int start, end;
 
-		for (int i = 0; i < yMax; i += 5)
-			for (int j = xMin; j < xMax; j++)
-				if (mRes.get(i, j)[0] == 255) {
-					spots.add(new Point(j, i));
+		for (int i = 0; i*5 < yMax; i++){
+			spots[i] = new Point();
+			spots[i].x = -1;
+			spots[i].y = -1;
+			for (int j = xMin; j < xMax; j++){
+				if (mRes.get(i*5, j)[0] == 255) {
+					spots[i].x = j;
+					spots[i].y = i*5;
 					break;
 				}
+			}
+		}
 
 		// for (int i = yMin; i < yMax; i += 5) {
 		// start = nStart;
@@ -173,7 +203,10 @@ public class ImageProcess {
 
 		Log.i("mRes",
 				String.format("col: %d row: %d", mRes.cols(), mRes.rows()));
-
+		
+		rhsSpot.x = -1;
+		rhsSpot.y = -1;
+		
 		for (int i = 0; i < mRes.cols() / 2; i++) {
 			x = i + mRes.cols() / 2;
 			y = (int) (line[1] * x + line[0] / 2);
@@ -187,7 +220,7 @@ public class ImageProcess {
 		return rhsSpot;
 	}
 
-	public void writePointToFile(ArrayList<Point> points, String filename) {
+	public void writePointToFile(Point[] points, String filename) {
 		File file = new File(
 				android.os.Environment.getExternalStorageDirectory()
 						+ "/capstone/" + filename);
@@ -210,7 +243,7 @@ public class ImageProcess {
 		}
 	}
 
-	public void writePoint3ToFile(ArrayList<Point3> points, String filename) {
+	public void writePoint3ToFile(Point3[] points, String filename) {
 		Log.d("out", "lalala");
 		File file = new File(
 				android.os.Environment.getExternalStorageDirectory()
