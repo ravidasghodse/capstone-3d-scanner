@@ -104,9 +104,9 @@ public class ScannerActivity extends Activity {
 				timelapseRunning = true;
 				timerUpdateHandler.post(timerUpdateTask);
 			} else {
-				showDialog(DIALOG_PAUSED_ID);
-				// timelapseRunning = false;
-				// timerUpdateHandler.removeCallbacks(timerUpdateTask);
+//				showDialog(DIALOG_PAUSED_ID);
+				 timelapseRunning = false;
+				 timerUpdateHandler.removeCallbacks(timerUpdateTask);
 			}
 		}
 	};
