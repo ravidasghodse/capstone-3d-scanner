@@ -15,7 +15,12 @@ public class PointCloud {
 
 	public static float xlook;
 	public static float ylook;
-
+	public static float zoomDist = 0.0f;
+	public static float xDist = 0.0f;
+	public static float yDist = 0.0f;
+	public static int dump = 10;
+	public static float zAvg;
+	
 	public static void addPoint(Point3 point) {
 		vertices[cur++] = (float) point.x;
 		vertices[cur++] = (float) point.y;
